@@ -17,15 +17,15 @@ const AdminSchema = new mongoose.Schema({
     passcode: {
         type: String,
     },
-    ip: {
-        type: String,
+    password:{
+        type:String
     },
+    ip: [{
+        type: String,
+    }],
     last_login: {
         type: String,
-        default: false
     }
-},
-    { timestamps: true },
-    { versionKey: false });
+}, { versionKey: false });
 
 module.exports = mongoose.model("Admin", AdminSchema);
