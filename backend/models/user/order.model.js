@@ -17,21 +17,21 @@ const OrderSchema = new mongoose.Schema({
         }
     },
     amount: {
-        type: Number
+        type: String
     },
     discount: {
-        type: Number
+        type: String
     },
     paymentMode: {
         type: String
     },
-    transactionID: {
+    transactionId: {
         type: String
     },
     userId: {
         type: String
     },
-    vendorIdendorId: {
+    vendorId: {
         type: String
     },
     pickupDate: {
@@ -53,7 +53,18 @@ const OrderSchema = new mongoose.Schema({
         type: String
     },
     items: [{
-        type: String
+        itemId: {
+            type: String
+        },
+        serviceId: {
+            type: Date 
+        },
+        unitPrice: {
+            type: String
+        },
+        qty: {
+            type: Date 
+        }
     }],
     order_pics: [{
         type: String

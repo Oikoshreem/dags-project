@@ -74,7 +74,7 @@ exports.credentials = async (req, res) => {
 
 exports.verifyOTP = async (req, res) => {
     try {
-        const { userOTP, phone } = req.body;
+        const { adminOTP, phone } = req.body;
 
         const sessionData = req.session[phone];
         if (!sessionData) {
@@ -89,16 +89,16 @@ exports.verifyOTP = async (req, res) => {
 
         const { phoneOTP } = sessionData;
 
-        if (!userOTP || !phoneOTP) {
+        if (!adminOTP || !phoneOTP) {
             return res
                 .status(400)
                 .json({
                     success: false,
-                    message: "Both user OTP and admin OTP are required",
+                    message: "Both admin OTP and admin OTP are required",
                 });
         }
 
-        if (userOTP !== phoneOTP) {
+        if (adminOTP !== phoneOTP) {
             return res
                 .status(401)
                 .json({ success: false, message: "OTP verification failed" });
@@ -181,3 +181,34 @@ exports.twoSV = async (req, res) => {
             });
     }
 };
+
+exports.forgotPassword = async (req, res) => {
+    const { password, cpassword , phone } = req.body;
+
+    if (password !== cpassword) {
+        return res.status(401).json({
+            success: false, message: "Password and confirm Password does not match"
+        });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const admin = await Admin.find(phone); 
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        admin.password = hashedPassword;
+        await admin.save();
+        
+        res.status(200).json({
+            success: true, message: "Password reset successful"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false, message: "An error occurred while resetting password"
+        });
+    }
+}
+
+exports.forgotPasscode = async (req, res) => { }

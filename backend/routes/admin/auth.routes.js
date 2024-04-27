@@ -4,7 +4,7 @@ const {
     credentials,
     verifyOTP,
     twoSV
-} = require("../../controllers/admin/auth")
+} = require("../../controllers/admin/auth.admin")
 const { logIP, auth } = require('../../middlewares/admin/auth')
 
 router.post("/credintials", logIP, credentials)

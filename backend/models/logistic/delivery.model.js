@@ -1,24 +1,23 @@
 const mongoose = require("mongoose");
 
-const VendorSchema = new mongoose.Schema({
-    vendorId: {
+const DeliveryPartnerSchema = new mongoose.Schema({
+    partnerId: {
         type: String,
-        required: true,
         unique: true
     },
     name: {
-        type: String,
-        required: true
+        type: String
     },
     email: {
-        type: String,
-        required: true,
-        unique: true
+        type: String
     },
     phone: {
         type: String
     },
-    profilePic: {
+    profile_pic: {
+        type: String
+    },
+    OTP: {
         type: String
     },
     docType: {
@@ -30,14 +29,14 @@ const VendorSchema = new mongoose.Schema({
     verificationStatus: {
         type: String
     },
-    OTP: {
-        type: String
-    },
     capacity: {
         type: Number
     },
     availability: {
         type: Boolean
+    },
+    geoCoordinates: {
+        type: String
     },
     address: {
         type: String
@@ -49,7 +48,7 @@ const VendorSchema = new mongoose.Schema({
         type: String
     },
     orders: [{
-        type: String
+        type: String,
     }],
     lastLogin: {
         type: Date
@@ -58,8 +57,8 @@ const VendorSchema = new mongoose.Schema({
         type: String
     }],
     createdOn: {
-        type: Date,
+        type: Date
     }
 }, { versionKey: false });
 
-module.exports = mongoose.model("Vendor", VendorSchema);
+module.exports = mongoose.model("DeliveryPartner", DeliveryPartnerSchema);

@@ -23,9 +23,9 @@ const AdminSchema = new mongoose.Schema({
     ip: [{
         type: String,
     }],
-    last_login: {
+    profile_pic: {
         type: String,
-    }
+    },
 }, { versionKey: false });
 
 module.exports = mongoose.model("Admin", AdminSchema);

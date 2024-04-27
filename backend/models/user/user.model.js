@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    profile_pic: {
+    profilePic: {
         type: String
     },
     OTP: {
@@ -39,9 +39,9 @@ const UserSchema = new mongoose.Schema({
     lastLogin: {
         type: Date
     },
-    IP: {
+    ip: [{
         type: String
-    },
+    }],
     createdOn: {
         type: Date
     }
