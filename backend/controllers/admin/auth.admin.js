@@ -22,8 +22,8 @@ exports.credentials = async (req, res) => {
         const isPasswordCorrect = await bcrypt.compare(password, admin.password);
         console.log(isPasswordCorrect);
         if (isPasswordCorrect) {
-            const currentTime = new Date().toISOString();
-            admin.last_login = currentTime;
+            const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
+            admin.lastLogin = currentTime;
             await admin.save();
 
             if (isNewIP) {
@@ -88,7 +88,7 @@ exports.verifyOTP = async (req, res) => {
         }
 
         const { phoneOTP } = sessionData;
-
+        console.log(admin)
         if (!adminOTP || !phoneOTP) {
             return res
                 .status(400)
@@ -104,11 +104,12 @@ exports.verifyOTP = async (req, res) => {
                 .json({ success: false, message: "OTP verification failed" });
         }
 
-        const lastLoginTime = new Date(admin.last_login);
-        const currentTime = new Date();
+        const lastLoginTime = new Date(admin.lastLogin);
+        console.log(lastLoginTime)
+        const currentTime = new Date(Date.now() + (330 * 60000)); 
         const timeDiff = Math.abs(currentTime - lastLoginTime);
         const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
-
+        console.log(minutesDiff)
         if (minutesDiff > 5) {
             return res
                 .status(401)
@@ -183,7 +184,7 @@ exports.twoSV = async (req, res) => {
 };
 
 exports.forgotPassword = async (req, res) => {
-    const { password, cpassword , phone } = req.body;
+    const { password, cpassword, phone } = req.body;
 
     if (password !== cpassword) {
         return res.status(401).json({
@@ -193,13 +194,13 @@ exports.forgotPassword = async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const admin = await Admin.find(phone); 
+        const admin = await Admin.find(phone);
         if (!admin) {
             return res.status(404).json({ success: false, message: "Admin not found" });
         }
         admin.password = hashedPassword;
         await admin.save();
-        
+
         res.status(200).json({
             success: true, message: "Password reset successful"
         });
@@ -211,4 +212,31 @@ exports.forgotPassword = async (req, res) => {
     }
 }
 
-exports.forgotPasscode = async (req, res) => { }
+exports.forgotPasscode = async (req, res) => {
+    const { passcode, cpasscode, phone } = req.body;
+
+    if (passcode !== cpasscode) {
+        return res.status(401).json({
+            success: false, message: "Password and confirm Password does not match"
+        });
+    }
+
+    try {
+        const admin = await Admin.find(phone);
+        if (!admin) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
+        admin.passcode = passcode;
+        await admin.save();
+
+        res.status(200).json({
+            success: true, message: "Passcode reset successful"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false, message: "An error occurred while resetting passcode"
+        });
+    }
+
+}

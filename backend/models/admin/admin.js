@@ -26,6 +26,9 @@ const AdminSchema = new mongoose.Schema({
     profile_pic: {
         type: String,
     },
+    lastLogin:{
+        type:String
+    }
 }, { versionKey: false });
 
 module.exports = mongoose.model("Admin", AdminSchema);

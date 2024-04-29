@@ -21,7 +21,6 @@ exports.viewOrders = async (req, res) => {
             });
     }
 }
-
 exports.getOrder = async (req, res) => {
     try {
         const { orderId } = req.body;
@@ -72,3 +71,74 @@ exports.getCancelledOrders = async (req, res) => {
         });
     }
 }
+
+
+exports.day = async (req, res) => {
+    try {
+        const date = new Date();
+        const nextDay = new Date(date);
+        nextDay.setDate(date.getDate() + 1);
+
+        const totalOrders = await Orders.countDocuments({
+            orderDate: { $gte: date, $lt: nextDay }
+        }).sort({ orderDate: 1 });
+
+        res.json({ totalOrders });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+exports.week = async (req, res) => {
+    try {
+        const today = new Date();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+        const totalOrders = await Orders.countDocuments({
+            orderDate: { $gte: startOfWeek, $lt: endOfWeek }
+        }).sort({ orderDate: 1 });
+
+        res.json({ totalOrders });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+exports.month = async (req, res) => {
+    try {
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+        const totalOrders = await Orders.countDocuments({
+            orderDate: { $gte: startOfMonth, $lte: endOfMonth }
+        }).sort({ orderDate: 1 });
+
+        res.json({ totalOrders });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+exports.dateRange = async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+
+        const totalOrders = await Orders.countDocuments({
+            orderDate: { $gte: new Date(startDate), $lte: new Date(endDate) }
+        }).sort({ orderDate: 1 });
+
+        res.json({ totalOrders });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
