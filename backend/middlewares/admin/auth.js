@@ -19,7 +19,6 @@ exports.logIP = async (req, res, next) => {
 
 exports.auth = async (req, res, next) => {
   try {
-    console.log(req.cookies)
     const token = 
       req.body.token||
       req.cookies.token

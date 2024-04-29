@@ -1,4 +1,131 @@
-exports.register = async(req,res)=>{}
-exports.login = async(req,res)=>{}
-exports.forgotpassword = async(req,res)=>{}
-exports.logout = async(req,res)=>{}
+const jwt = require("jsonwebtoken");
+const User = require("../../models/user/user.model");
+const bcrypt = require("bcrypt");
+const { generateOTP, sendOTP } = require("../../utils/admin/generateOTP");
+
+exports.register = async (req, res) => {
+    const { phone, name, isNewIP } = req.body;
+    const ip = req.ip;
+    if (!phone) {
+        return res.status(400).json({
+            message: "No phone number provided"
+        })
+    }
+    const checkUserPresent = await User.findOne({ phone });
+
+    if (checkUserPresent) {
+        return res.status(401).json({
+            success: false,
+            message: "User already exists"
+        })
+    }
+    const phoneOTP = generateOTP();
+    const hashedOTP = await bcrypt.hash(phoneOTP, 10);
+
+    try {
+        const user = await User.create({ phone, name, OTP: hashedOTP });
+        sendOTP(phoneOTP, phone);
+        const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
+        user.lastLogin = currentTime
+        if (!user.ip.includes(ip)) {
+            user.ip.push(ip);
+            await user.save();
+        }
+        return res.status(200).json({
+            success: true,
+            message: "OTP sent successfully",
+            user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to create user",
+            error: error.message
+        });
+    }
+}
+
+exports.verifyOTP = async (req, res) => {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) {
+        return res.status(400).json({
+            message: "Phone number and OTP are required"
+        });
+    }
+
+    try {
+        const user = await User.findOne({ phone });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        const otpMatch = await bcrypt.compare(otp, user.OTP);
+        if (!otpMatch) {
+            return res.status(401).json({
+                message: "Invalid OTP"
+            });
+        }
+        const lastLoginTime = new Date(user.lastLogin);
+        const currentTime = new Date(Date.now() + (330 * 60000));
+        const timeDiff = Math.abs(currentTime - lastLoginTime);
+        const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
+        if (minutesDiff > 5) {
+            return res
+                .status(401)
+                .json({ success: false, message: "OTP expired" });
+        }
+        const token = jwt.sign(
+            { phone: user.phone, id: user._id, name: user.name },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "30m",
+            }
+        );
+        return res.status(200).json({
+            success: true,
+            message: "OTP verified successfully",
+            token
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to verify OTP",
+            error: error.message
+        });
+    }
+}
+
+exports.login = async (req, res) => {
+    const { phone } = req.body;
+    const ip = req.ip;
+    const user = await User.findOne({ phone });
+    if (!user) {
+        return res.status(404).json({
+            message: "Please register first"
+        });
+    }
+    const phoneOTP = generateOTP();
+    const hashedOTP = await bcrypt.hash(phoneOTP, 10);
+
+    try {
+        sendOTP(phoneOTP, phone);
+        const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
+        user.lastLogin = currentTime
+        if (!user.ip.includes(ip)) {
+            user.ip.push(ip);
+            await user.save();
+        }
+        return res.status(200).json({
+            success: true,
+            message: "OTP sent successfully",
+            user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to send OTP",
+            error: error.message
+        });
+    }
+} 

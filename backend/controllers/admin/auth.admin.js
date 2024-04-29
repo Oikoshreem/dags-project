@@ -31,7 +31,6 @@ exports.credentials = async (req, res) => {
                 console.log(phoneOTP);
                 req.session[admin.phone] = { phoneOTP };
                 sendOTP(phoneOTP, phone);
-                const smsMessage = `Your OTP is: ${phoneOTP}. This OTP is valid for 5 minutes.`;
                 return res
                     .status(200)
                     .json({
@@ -74,7 +73,7 @@ exports.credentials = async (req, res) => {
 
 exports.verifyOTP = async (req, res) => {
     try {
-        const { adminOTP, phone } = req.body;
+        const { OTP, phone } = req.body;
 
         const sessionData = req.session[phone];
         if (!sessionData) {
@@ -89,7 +88,7 @@ exports.verifyOTP = async (req, res) => {
 
         const { phoneOTP } = sessionData;
         console.log(admin)
-        if (!adminOTP || !phoneOTP) {
+        if (!OTP || !phoneOTP) {
             return res
                 .status(400)
                 .json({
@@ -98,7 +97,7 @@ exports.verifyOTP = async (req, res) => {
                 });
         }
 
-        if (adminOTP !== phoneOTP) {
+        if (OTP !== phoneOTP) {
             return res
                 .status(401)
                 .json({ success: false, message: "OTP verification failed" });
@@ -106,7 +105,7 @@ exports.verifyOTP = async (req, res) => {
 
         const lastLoginTime = new Date(admin.lastLogin);
         console.log(lastLoginTime)
-        const currentTime = new Date(Date.now() + (330 * 60000)); 
+        const currentTime = new Date(Date.now() + (330 * 60000));
         const timeDiff = Math.abs(currentTime - lastLoginTime);
         const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
         console.log(minutesDiff)

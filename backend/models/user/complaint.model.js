@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const PaymentSchema = new mongoose.Schema({
+const ComplaintSchema = new mongoose.Schema({
     ticketId: {
         type: String
     },
@@ -18,9 +18,6 @@ const PaymentSchema = new mongoose.Schema({
     rating: {
         type: String
     },
-    paymentTo: {
-        type: String
-    }
 }, { versionKey: false });
 
-module.exports = mongoose.model("Payment", PaymentSchema);
+module.exports = mongoose.model("Complaint", ComplaintSchema);

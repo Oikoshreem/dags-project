@@ -1,5 +1,7 @@
 const Admin = require('../../models/admin/admin');
 const User = require('../../models/user/user.model');
+const mailSender = require('../../utils/admin/mailSender');
+const sendBulkEmails = require('../../Tempelates/bulkEmail.js')
 
 exports.fetchUsers = async (req, res) => {
     try {
@@ -56,5 +58,41 @@ exports.getUser = async (req, res) => {
         });
     }
 }
+
+exports.createUser = async (req, res) => {
+    try {
+        const newUser = await User.create(req.body);
+
+        return res.status(201).json({ message: "User created successfully.", user: newUser });
+    } catch (error) {
+        console.error("Error creating user:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+}
+
+exports.sendBulkEmails = async (req, res) => {
+    try {
+        const { emails, title } = req.body;
+
+        if (!emails || !Array.isArray(emails) || emails.length === 0) {
+            return res.status(400).json({ message: "Please provide valid email addresses." });
+        }
+
+        const emailOptions = {
+            from: 'sender@gamil.com.com',
+            subject: title,
+            html: sendBulkEmails(),
+            bcc: emails 
+        };
+
+        const emailResponse = await mailSender(emailOptions);
+
+        return res.status(200).json({ message: "Bulk emails sent successfully.", emailResponse });
+    } catch (error) {
+        console.error("Error sending bulk emails:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};
+
 exports.viewFeedbacks = async (req, res) => { }
 exports.getUser = async (req, res) => { }

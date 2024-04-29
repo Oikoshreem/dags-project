@@ -72,7 +72,6 @@ exports.getCancelledOrders = async (req, res) => {
     }
 }
 
-
 exports.day = async (req, res) => {
     try {
         const date = new Date();
@@ -88,7 +87,8 @@ exports.day = async (req, res) => {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });
     }
-};
+}
+
 
 exports.week = async (req, res) => {
     try {
@@ -107,7 +107,7 @@ exports.week = async (req, res) => {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });
     }
-};
+}
 
 
 exports.month = async (req, res) => {
@@ -125,7 +125,7 @@ exports.month = async (req, res) => {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });
     }
-};
+}
 
 exports.dateRange = async (req, res) => {
     try {
@@ -140,5 +140,5 @@ exports.dateRange = async (req, res) => {
         console.error(err);
         res.status(500).json({ error: "Internal server error" });
     }
-};
+}
 
