@@ -7,16 +7,13 @@ const UserSchema = new mongoose.Schema({
     },
     name: {
         type: String,
-        required: true
     },
     email: {
         type: String,
-        required: true,
         unique: true
     },
     phone: {
         type: String,
-        required: true,
     },
     profilePic: {
         type: String
@@ -37,7 +34,7 @@ const UserSchema = new mongoose.Schema({
         type: String
     }],
     lastLogin: {
-        type: Date
+        type: String
     },
     ip: [{
         type: String

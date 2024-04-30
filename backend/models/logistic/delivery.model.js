@@ -27,7 +27,8 @@ const DeliveryPartnerSchema = new mongoose.Schema({
         type: String
     },
     verificationStatus: {
-        type: String
+        type: String,
+        default: 'pending'
     },
     capacity: {
         type: Number
@@ -61,4 +62,23 @@ const DeliveryPartnerSchema = new mongoose.Schema({
     }
 }, { versionKey: false });
 
-module.exports = mongoose.model("DeliveryPartner", DeliveryPartnerSchema);
+DeliveryPartnerSchema.pre('save', async function (next) {
+    try {
+        if (!this.partnerId) {
+            const highestPartner = await mongoose.model('Logistic').findOne({}, { partnerId: 1 }, { sort: { 'partnerId': -1 } });
+            let newpartnerId = 'L1';
+
+            if (highestPartner) {
+                const lastpartnerIdNumber = parseInt(highestPartner.partnerId.replace(/[^\d]/g, ''), 10);
+                newpartnerId = `L${lastpartnerIdNumber + 1}`;
+            }
+
+            this.partnerId = newpartnerId;
+        }
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
+module.exports = mongoose.model("Logistic", DeliveryPartnerSchema);

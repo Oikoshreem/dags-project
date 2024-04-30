@@ -1,6 +1,5 @@
 const Admin = require("../../models/admin/admin");
 const jwt = require("jsonwebtoken");
-
 const bcrypt = require("bcrypt");
 const { generateOTP, sendOTP } = require("../../utils/admin/generateOTP");
 
@@ -93,7 +92,7 @@ exports.verifyOTP = async (req, res) => {
                 .status(400)
                 .json({
                     success: false,
-                    message: "Both admin OTP and admin OTP are required",
+                    message: "Both OTP are required",
                 });
         }
 

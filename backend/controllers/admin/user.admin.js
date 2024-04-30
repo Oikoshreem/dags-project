@@ -1,7 +1,7 @@
 const Admin = require('../../models/admin/admin');
 const User = require('../../models/user/user.model');
 const mailSender = require('../../utils/admin/mailSender');
-const sendBulkEmails = require('../../Tempelates/bulkEmail.js')
+const { bulkEmail } = require('../../Tempelates/bulkEmail.js')
 
 exports.fetchUsers = async (req, res) => {
     try {
@@ -79,9 +79,10 @@ exports.sendBulkEmails = async (req, res) => {
         }
 
         const emailOptions = {
-            from: 'sender@gamil.com.com',
+            from: 'kristy.lindgren@ethereal.email',
+            // to: emails,
             subject: title,
-            html: sendBulkEmails(),
+            html: bulkEmail(),
             bcc: emails 
         };
 
@@ -95,4 +96,5 @@ exports.sendBulkEmails = async (req, res) => {
 };
 
 exports.viewFeedbacks = async (req, res) => { }
+
 exports.getUser = async (req, res) => { }

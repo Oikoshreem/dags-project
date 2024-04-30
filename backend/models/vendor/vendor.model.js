@@ -3,16 +3,13 @@ const mongoose = require("mongoose");
 const VendorSchema = new mongoose.Schema({
     vendorId: {
         type: String,
-        required: true,
         unique: true
     },
     name: {
         type: String,
-        required: true
     },
     email: {
         type: String,
-        required: true,
         unique: true
     },
     phone: {
@@ -28,7 +25,8 @@ const VendorSchema = new mongoose.Schema({
         type: String
     },
     verificationStatus: {
-        type: String
+        type: String,
+        default: 'pending'
     },
     OTP: {
         type: String

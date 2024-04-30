@@ -1,46 +1,46 @@
 const jwt = require("jsonwebtoken");
-const User = require("../../models/user/user.model");
+const Vendor = require("../../models/vendor/vendor.model");
 const bcrypt = require("bcrypt");
 const { generateOTP, sendOTP } = require("../../utils/admin/generateOTP");
 
 exports.register = async (req, res) => {
-    const { phone, name } = req.body;
+    const { phone, isNewIP } = req.body;
     const ip = req.ip;
     if (!phone) {
         return res.status(400).json({
             message: "No phone number provided"
         })
     }
-    const checkUserPresent = await User.findOne({ phone });
+    const checkVendorPresent = await Vendor.findOne({ phone });
 
-    if (checkUserPresent) {
+    if (checkVendorPresent) {
         return res.status(401).json({
             success: false,
-            message: "User already exists"
+            message: "Vendor already exists"
         })
     }
     const phoneOTP = generateOTP();
     const hashedOTP = await bcrypt.hash(phoneOTP, 10);
 
     try {
-        const user = await User.create({ phone, name, OTP: hashedOTP });
-        console.log("user otp", phoneOTP)
-        // sendOTP(phoneOTP, phone);
+        const vendor = await Vendor.create({ phone, OTP: hashedOTP });
+        console.log(phoneOTP)
+        sendOTP(phoneOTP, phone);
         const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
-        user.lastLogin = currentTime
-        if (!user.ip.includes(ip)) {
-            user.ip.push(ip);
-            await user.save();
+        vendor.lastLogin = currentTime
+        if (!vendor.ip.includes(ip)) {
+            vendor.ip.push(ip);
+            await vendor.save();
         }
         return res.status(200).json({
             success: true,
             message: "OTP sent successfully",
-            user
+            vendor
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Failed to create user",
+            message: "Failed to create Vendor",
             error: error.message
         });
     }
@@ -55,19 +55,19 @@ exports.verifyOTP = async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ phone });
-        if (!user) {
+        const vendor = await Vendor.findOne({ phone });
+        if (!vendor) {
             return res.status(404).json({
-                message: "User not found"
+                message: "Vendor not found"
             });
         }
-        const otpMatch = await bcrypt.compare(otp, user.OTP);
+        const otpMatch = await bcrypt.compare(otp, vendor.OTP);
         if (!otpMatch) {
             return res.status(401).json({
                 message: "Invalid OTP"
             });
         }
-        const lastLoginTime = new Date(user.lastLogin);
+        const lastLoginTime = new Date(vendor.lastLogin);
         const currentTime = new Date(Date.now() + (330 * 60000));
         const timeDiff = Math.abs(currentTime - lastLoginTime);
         const minutesDiff = Math.ceil(timeDiff / (1000 * 60));
@@ -78,7 +78,7 @@ exports.verifyOTP = async (req, res) => {
                 .json({ success: false, message: "OTP expired" });
         }
         const token = jwt.sign(
-            { phone: user.phone, id: user._id, name: user.name },
+            { phone: vendor.phone, id: vendor._id },
             process.env.JWT_SECRET,
             {
                 expiresIn: "30m",
@@ -99,33 +99,33 @@ exports.verifyOTP = async (req, res) => {
 }
 
 exports.login = async (req, res) => {
-
     try {
         const { phone } = req.body;
         const ip = req.ip;
-        const user = await User.findOne({ phone });
-        if (!user) {
+        const vendor = await Vendor.findOne({ phone });
+        if (!vendor) {
             return res.status(404).json({
                 message: "Please register first"
             });
         }
         const phoneOTP = generateOTP();
         const hashedOTP = await bcrypt.hash(phoneOTP, 10);
-        user.OTP = hashedOTP;
-        await user.save();
-        console.log(user, phoneOTP)
+        vendor.OTP = hashedOTP;
+        await vendor.save();
+
         sendOTP(phoneOTP, phone);
+        console.log(phoneOTP)
         const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
-        user.lastLogin = currentTime
-        await user.save();
-        if (!user.ip.includes(ip)) {
-            user.ip.push(ip);
-            await user.save();
+        vendor.lastLogin = currentTime
+        await vendor.save();
+        if (!vendor.ip.includes(ip)) {
+            vendor.ip.push(ip);
+            await vendor.save();
         }
         return res.status(200).json({
             success: true,
             message: "OTP sent successfully",
-            user
+            Vendor
         });
     } catch (error) {
         return res.status(500).json({

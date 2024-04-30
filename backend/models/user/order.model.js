@@ -8,14 +8,16 @@ const OrderSchema = new mongoose.Schema({
     orderDate: {
         type: Date,
     },
-    orderStatus: {
+    orderStatus:[ {
         status: {
-            type: String
+            type: String,
+            default: "Initiated"
         },
         time: {
-            type: Date 
+            type: Date,
+            default: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         }
-    },
+    }],
     amount: {
         type: String
     },
@@ -57,13 +59,13 @@ const OrderSchema = new mongoose.Schema({
             type: String
         },
         serviceId: {
-            type: Date 
+            type: Date
         },
         unitPrice: {
             type: String
         },
         qty: {
-            type: Date 
+            type: Date
         }
     }],
     order_pics: [{
@@ -73,5 +75,24 @@ const OrderSchema = new mongoose.Schema({
         type: String
     }
 }, { versionKey: false });
+
+OrderSchema.pre('save', async function (next) {
+    try {
+        if (!this.orderId) {
+            const highestOrder = await mongoose.model('Order').findOne({}, { orderId: 1 }, { sort: { 'orderId': -1 } });
+            let newOrderId = 'OD1';
+
+            if (highestOrder) {
+                const lastOrderIdNumber = parseInt(highestOrder.orderId.replace(/[^\d]/g, ''), 10);
+                newOrderId = `OD${lastOrderIdNumber + 1}`;
+            }
+
+            this.orderId = newOrderId;
+        }
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = mongoose.model("Order", OrderSchema);

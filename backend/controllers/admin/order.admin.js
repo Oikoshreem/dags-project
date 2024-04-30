@@ -1,4 +1,5 @@
 const Orders = require('../../models/user/order.model');
+const User = require('../../models/user/user.model');
 exports.viewOrders = async (req, res) => {
     try {
         let orders;
@@ -21,6 +22,7 @@ exports.viewOrders = async (req, res) => {
             });
     }
 }
+
 exports.getOrder = async (req, res) => {
     try {
         const { orderId } = req.body;
@@ -38,6 +40,7 @@ exports.getOrder = async (req, res) => {
         });
     }
 }
+
 exports.updateOrder = async (req, res) => {
     const { orderId } = req.body;
     try {
@@ -57,6 +60,7 @@ exports.updateOrder = async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 }
+
 exports.getCancelledOrders = async (req, res) => {
     try {
         const orders = await Orders.find({ OrderStatus: { $eq: "Canceled" } });
@@ -71,6 +75,39 @@ exports.getCancelledOrders = async (req, res) => {
         });
     }
 }
+
+exports.createOrder = async (req, res) => {
+    try {
+        const { userid, ...updates } = req.body;
+        const user = await User.findOne({ phone: userid });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
+        const order = await Orders.create({
+            userId: userid,
+            orderDate: currentTime,
+            updates
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Order created successfully",
+            order,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to create order",
+            error: error.message,
+        });
+    }
+};
 
 exports.day = async (req, res) => {
     try {

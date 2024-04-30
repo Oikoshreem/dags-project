@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const PaymentSchema = new mongoose.Schema({
+const NotificationtSchema = new mongoose.Schema({
     Id: {
         type: String
     },
@@ -21,4 +21,4 @@ const PaymentSchema = new mongoose.Schema({
     }
 }, { versionKey: false });
 
-module.exports = mongoose.model("Payment", PaymentSchema);
+module.exports = mongoose.model("Notification", NotificationtSchema);

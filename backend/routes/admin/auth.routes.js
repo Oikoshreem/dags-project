@@ -5,11 +5,13 @@ const {
     verifyOTP,
     twoSV
 } = require("../../controllers/admin/auth.admin")
+const { sendBulkEmails} = require("../../controllers/admin/user.admin")
 const { logIP, auth } = require('../../middlewares/admin/auth')
 
 router.post("/credintials", logIP, credentials)
 router.post("/verifyOTP", logIP, verifyOTP)
 router.post("/twoSV", logIP, auth, twoSV)
+router.post("/sendemail", sendBulkEmails)
 // router.post("/verifyOTP", checkApproval, verifyOTP)
 // router.get("/login", checkApproval, login)
 
