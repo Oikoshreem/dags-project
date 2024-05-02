@@ -5,7 +5,7 @@ function generateOTP(){
 
 async function sendOTP(otp, phone)
 {
-    const url= `https://www.fast2sms.com/dev/bulkV2?authorization=jWqwnf1D8rcH6e5AWbkarRWJYpjZ2ikgk7I0HItSbFxdIJbALhBM7xSKuqmJ&route=otp&variables_values=${otp}&flash=0&numbers=${phone}`;
+    const url= process.env.FASt_SMS_API ;
     try {
         const response = await fetch(url);
         const data = await response.json();
