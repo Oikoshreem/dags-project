@@ -1,12 +1,12 @@
-const Orders = require('../../models/user/order.model');
+const Order = require('../../models/user/order.model');
 const User = require('../../models/user/user.model');
 exports.viewOrders = async (req, res) => {
     try {
         let orders;
         if (req.body.filter == true) {
-            orders = await Orders.find({ OrderStatus: { $ne: "Completed" } });
+            orders = await Order.find({ OrderStatus: { $ne: "Completed" } });
         } else {
-            orders = await Orders.find();
+            orders = await Order.find();
         }
         return res.status(200).json({
             orders,
@@ -27,7 +27,7 @@ exports.getOrder = async (req, res) => {
     try {
         const { orderId } = req.body;
 
-        const order = await Orders.find({ orderId })
+        const order = await Order.find({ orderId })
         return res.status(200).json({
             mesage: "order fetched sucessfully",
             order
@@ -44,7 +44,7 @@ exports.getOrder = async (req, res) => {
 exports.updateOrder = async (req, res) => {
     const { orderId } = req.body;
     try {
-        const updatedOrder = await Orders.findOneAndUpdate(
+        const updatedOrder = await Order.findOneAndUpdate(
             { orderId: orderId },
             req.body,
             { new: true }
@@ -63,7 +63,7 @@ exports.updateOrder = async (req, res) => {
 
 exports.getCancelledOrders = async (req, res) => {
     try {
-        const orders = await Orders.find({ OrderStatus: { $eq: "Canceled" } });
+        const orders = await Order.find({ OrderStatus: { $eq: "Canceled" } });
         res.status(200).json({
             message: "Cancelled orders fetched successfully",
             orders
@@ -89,7 +89,7 @@ exports.createOrder = async (req, res) => {
         }
 
         const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
-        const order = await Orders.create({
+        const order = await Order.create({
             userId: userid,
             orderDate: currentTime,
             updates
@@ -135,7 +135,7 @@ exports.week = async (req, res) => {
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 7);
 
-        const totalOrders = await Orders.countDocuments({
+        const totalOrders = await Order.countDocuments({
             orderDate: { $gte: startOfWeek, $lt: endOfWeek }
         }).sort({ orderDate: 1 });
 
@@ -153,7 +153,7 @@ exports.month = async (req, res) => {
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-        const totalOrders = await Orders.countDocuments({
+        const totalOrders = await Order.countDocuments({
             orderDate: { $gte: startOfMonth, $lte: endOfMonth }
         }).sort({ orderDate: 1 });
 
@@ -168,7 +168,7 @@ exports.dateRange = async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
 
-        const totalOrders = await Orders.countDocuments({
+        const totalOrders = await Order.countDocuments({
             orderDate: { $gte: new Date(startDate), $lte: new Date(endDate) }
         }).sort({ orderDate: 1 });
 

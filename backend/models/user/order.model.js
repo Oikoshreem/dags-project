@@ -19,7 +19,7 @@ const OrderSchema = new mongoose.Schema({
         }
     }],
     amount: [{
-        type: String
+        type: Number
     }],
     discount: {
         type: String
@@ -59,13 +59,13 @@ const OrderSchema = new mongoose.Schema({
             type: String
         },
         serviceId: {
-            type: Date
-        },
-        unitPrice: {
             type: String
         },
+        unitPrice: {
+            type: Number
+        },
         qty: {
-            type: Date
+            type: Number
         }
     }],
     order_pics: [{
