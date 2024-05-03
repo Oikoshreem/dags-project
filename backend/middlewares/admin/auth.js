@@ -11,7 +11,7 @@ exports.logIP = async (req, res, next) => {
     return res.status(404).json({ message: "Admin not found" });
   }
   const isNewIP = !admin.ip.includes(ip);
-  req.body.isNewIP = isNewIP;
+  req.body.isNewIP = isNewIP; 
   // const IP = req.headers['x-forwarded-for'] || req.ip
   console.log(`IP Address: ${ip}`);
   next();

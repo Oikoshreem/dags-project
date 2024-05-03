@@ -8,10 +8,10 @@ const OrderSchema = new mongoose.Schema({
     orderDate: {
         type: Date,
     },
-    orderStatus:[ {
+    orderStatus: [{
         status: {
             type: String,
-            default: "Initiated"
+            default: "Initiated" //initiated, readyToPickup, pickedUp, cleaning, readyToDelivery, outForDelivery, delivered, cancelled
         },
         time: {
             type: Date,

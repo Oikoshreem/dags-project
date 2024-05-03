@@ -42,24 +42,36 @@ ServiceSchema.pre('save', async function (next) {
 
 ServiceSchema.pre('save', async function (next) {
     try {
-        this.items.forEach(item => {
-            if (!item.itemId) {
-                const highestItem = this.items.reduce((prev, current) => (parseInt(prev.itemId.replace(/[^\d]/g, ''), 10) > parseInt(current.itemId.replace(/[^\d]/g, ''), 10)) ? prev : current, { itemId: 'IT0' });
-                let newItemId = 'IT1';
+        if (this.items && this.items.length > 0) {
+            // Find the highest itemId among all items in the database
+            const allItems = await mongoose.model('Service').find({}, { items: 1 });
+            let highestItemId = 0;
 
-                if (highestItem.itemId !== 'IT0') {
-                    const lastItemIdNumber = parseInt(highestItem.itemId.replace(/[^\d]/g, ''), 10);
-                    newItemId = `IT${lastItemIdNumber + 1}`;
+            allItems.forEach(service => {
+                service.items.forEach(item => {
+                    const itemIdNumber = parseInt(item.itemId.replace(/[^\d]/g, ''), 10);
+                    if (itemIdNumber > highestItemId) {
+                        highestItemId = itemIdNumber;
+                    }
+                });
+            });
+
+            let newItemId = `IT${highestItemId + 1}`;
+
+            this.items.forEach(item => {
+                if (!item.itemId) {
+                    item.itemId = newItemId;
                 }
-
-                item.itemId = newItemId;
-            }
-        });
+            });
+        }
         next();
     } catch (error) {
         next(error);
     }
 });
+
+
+
 
 
 module.exports = mongoose.model("Service", ServiceSchema);

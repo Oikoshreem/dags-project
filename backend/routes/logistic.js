@@ -4,11 +4,11 @@ const {
     register,
     verifyOTP,
     login
-} = require("../../controllers/user/auth.user")
-const { auth } = require('../../middlewares/admin/auth')
+} = require("../controllers/logistic/auth.logistic")
+// const { auth } = require('../../middlewares/admin/auth')
 
 router.post("/signup", register)
 router.post("/verifyOTP", verifyOTP)
 router.post("/login", login)
 
-module.exports = { user_authRoutes: router }; 
+module.exports = { logisticRoutes: router }; 

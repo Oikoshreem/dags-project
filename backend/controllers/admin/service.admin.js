@@ -1,11 +1,11 @@
 const Service = require('../../models/vendor/service.model');
 
 exports.createService = async (req, res) => {
-    const { serviceName } = req.body;
+    const { name } = req.body;
 
     try {
         const newService = await Service.create({
-            serviceName: serviceName
+            serviceName: name
         });
 
         res.status(201).json(newService);
@@ -16,8 +16,7 @@ exports.createService = async (req, res) => {
 }
 
 exports.addItemToService = async (req, res) => {
-    const { serviceId } = req.params;
-    const { itemName, unitPrice } = req.body;
+    const { serviceId, itemName, unitPrice } = req.body;
 
     try {
         const service = await Service.findOne({ serviceId: serviceId });
@@ -25,6 +24,9 @@ exports.addItemToService = async (req, res) => {
             return res.status(404).json({ error: 'Service not found' });
         }
 
+        if (!itemName && !unitPrice) {
+            return res.status(404).json({ error: 'No item details provided' });
+        }
         service.items.push({
             name: itemName,
             unitPrice: unitPrice
@@ -34,7 +36,9 @@ exports.addItemToService = async (req, res) => {
 
         res.status(200).json(service);
     } catch (err) {
-        console.error('Error adding item to service:', err);
-        res.status(500).json({ error: 'Could not add item to service' });
+        res.status(500).json({
+            error: 'Could not add item to service' ,
+            message: err.message
+        });
     }
 }
