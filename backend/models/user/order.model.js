@@ -18,9 +18,9 @@ const OrderSchema = new mongoose.Schema({
             default: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         }
     }],
-    amount: [{
+    amount: {
         type: Number
-    }],
+    },
     discount: {
         type: String
     },

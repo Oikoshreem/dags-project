@@ -64,7 +64,7 @@ const DeliveryPartnerSchema = new mongoose.Schema({
     }],
     createdOn: {
         type: Date
-    }
+    } //add array of location history 
 }, { versionKey: false });
 
 DeliveryPartnerSchema.pre('save', async function (next) {

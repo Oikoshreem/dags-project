@@ -1,6 +1,7 @@
 const Logistic = require('../../models/logistic/delivery.model');
 const Vendor = require('../../models/vendor/vendor.model');
 const calculateDistance = require('../../utils/logistic/shortestdistance');
+
 exports.ShortestDistanceforUser = async (req, res) => {
     try {
         const { latitude, longitude } = req.body;  //user coordinates
@@ -33,3 +34,5 @@ exports.ShortestDistanceforUser = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
+
+exports.giveReviewToLogistic = async (req, res) => { }

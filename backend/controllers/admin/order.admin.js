@@ -126,7 +126,6 @@ exports.day = async (req, res) => {
     }
 }
 
-
 exports.week = async (req, res) => {
     try {
         const today = new Date();
@@ -145,7 +144,6 @@ exports.week = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 }
-
 
 exports.month = async (req, res) => {
     try {
@@ -178,4 +176,3 @@ exports.dateRange = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 }
-

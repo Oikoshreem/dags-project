@@ -1,20 +1,19 @@
 const Order = require('../../models/user/order.model');
-const { startOfDay, endOfDay, isBefore } = require('date-fns');
+const { startOfDay, endOfDay, isBefore , subDays  } = require('date-fns');
 const Vendor = require('../../models/vendor/vendor.model');
 const Service = require('../../models/vendor/service.model');
-const Commission = require('../../models/admin/commission')
 
-exports.getVendorDashboard = async (req, res) => {
-    const vendorId = req.body.vendorId;
-    const today = new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
-    const per= await Commission.find();
+exports.getLogisticDashboard = async (req, res) => {
+    const logisticId = req.body.logisticId;
+    const today = new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString();
+    const yesterday = subDays(new Date(), 1); // Calculate yesterday's date
 
     try {
         const todayOrders = await Order.find({
-            vendorId: vendorId,
+            logisticId: logisticId,
             'orderStatus': {
                 $elemMatch: {
-                    status: 'Initiated', 
+                    status: 'Initiated',
                     time: {
                         $gte: startOfDay(today),
                         $lte: endOfDay(today)
@@ -23,14 +22,13 @@ exports.getVendorDashboard = async (req, res) => {
             }
         });
 
-        let totalAmountToday = 0;  //payment generated
-        todayOrders.forEach(order => {
-            totalAmountToday += parseFloat(order.amount);
-        });
+        // Initialize variables to track total amounts and income for today
+        let totalAmountToday = 0;
+        let totalIncomeToday = 0;
 
-
-        const completedOrders = await Order.find({
-            vendorId: vendorId,
+        // Fetch today's completed orders
+        const completedOrdersToday = await Order.find({
+            logisticId: logisticId,
             'orderStatus': {
                 $elemMatch: {
                     status: 'complete',
@@ -42,11 +40,42 @@ exports.getVendorDashboard = async (req, res) => {
             }
         });
 
+        completedOrdersToday.forEach(order => {
+            order.amount.forEach(amount => {
+                totalIncomeToday += amount;
+            });
+        });
 
-        const totalCompletedOrders = completedOrders.length;
+        // Fetch previous day's completed orders with status 'completed'
+        const completedOrdersYesterday = await Order.find({
+            logisticId: logisticId,
+            'orderDate': {
+                $gte: startOfDay(yesterday),
+                $lt: startOfDay(today)
+            },
+            'orderStatus.status': 'complete'
+        });
 
+        // Iterate over previous day's completed orders to calculate total income for today
+        completedOrdersYesterday.forEach(order => {
+            order.amount.forEach(amount => {
+                totalIncomeToday += amount;
+            });
+        });
+
+        // Calculate total amount for today's orders
+        todayOrders.forEach(order => {
+            order.amount.forEach(amount => {
+                totalAmountToday += amount;
+            });
+        });
+
+        // Calculate total completed orders for today
+        const totalCompletedOrders = completedOrdersToday.length + completedOrdersYesterday.length;
+
+        // Fetch previous day's orders with status other than 'complete' or 'cancelled'
         const previousDaysOrders = await Order.find({
-            vendorId: vendorId,
+            logisticId: logisticId,
             'orderDate': {
                 $lt: startOfDay(today)
             },
@@ -55,14 +84,16 @@ exports.getVendorDashboard = async (req, res) => {
             }
         });
 
+        // Send response with the calculated data
         res.status(200).json({
             totalAmountToday,
             totalCompletedOrders,
+            totalIncomeToday,
             todayOrders,
             previousDaysOrders
         });
     } catch (error) {
-        console.error("Error retrieving vendor dashboard data:", error);
+        console.error("Error retrieving logistic dashboard data:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
@@ -99,7 +130,7 @@ exports.getAllOrders = async (req, res) => {
         })
 
     } catch (error) {
-        console.error("Error retrieving vendor dashboard data:", error);
+        console.error("Error retrieving logistic dashboard data:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
@@ -166,7 +197,36 @@ exports.updateVendor = async (req, res) => {
     }
 }
 
-exports.updateStatus = async (req, res) => {
+exports.pickedUpStatus = async (req, res) => {
+    try {
+        const { orderId, secretKey } = req.body;
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        order.secretKey= secretKey;
+
+        order.orderStatus.push({
+            status: "pickedup",
+            time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
+        });
+
+        await order.save();
+
+        res.status(200).json({ 
+            message:"Order updated successfully",
+            order
+         });
+    } catch (error) {
+        {
+            console.error("Error updating order status:", error);
+            res.status(500).json({ error: "Failed to update order status" });
+        }
+    }
+};
+
+exports.outOfDeliveryStatus = async (req, res) => {
     try {
         const { orderId, secretKey } = req.body;
         const order = await Order.findOne({ orderId });
@@ -180,13 +240,16 @@ exports.updateStatus = async (req, res) => {
         }
 
         order.orderStatus.push({
-            status: "cleaning",
+            status: "outOfDelivery",
             time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         });
 
         await order.save();
 
-        res.status(200).json({ order });
+        res.status(200).json({ 
+            message:"Order delivered successfully",
+            order
+         });
     } catch (error) {
         {
             console.error("Error updating order status:", error);

@@ -134,4 +134,24 @@ exports.login = async (req, res) => {
             error: error.message
         });
     }
-} 
+}
+
+exports.fetchProfile = async (req, res) => {
+    try {
+        const { vendorId } = req.body
+
+        const vendor = await Vendor.findOne({ vendorId })
+
+        res.status(200).json({
+            message: "vendor fetched successfully",
+            vendor
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch profile",
+            error: error.message
+        });
+    }
+}
