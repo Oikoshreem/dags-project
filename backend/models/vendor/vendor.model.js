@@ -37,6 +37,9 @@ const VendorSchema = new mongoose.Schema({
     availability: {
         type: Boolean
     },
+    currrentActiveOrders: {
+        type: Number
+    },
     address: {
         type: String
     },

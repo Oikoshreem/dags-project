@@ -1,5 +1,5 @@
-const mapbox = require('mapbox');
-const axios= require('axios')
+// const mapbox = require('mapbox');
+// const axios= require('axios')
 
 // Function to calculate distance using Mapbox API
 // exports.calculateDistanceWithMapbox = async (lat1, lon1, lat2, lon2) => {
@@ -60,31 +60,31 @@ const axios= require('axios')
 //     }
 // }
 
-exports.calculateShortestDistance =  async(apiToken, start, end) => {
-    try {
-        const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}`;
-        const params = {
-            access_token: apiToken
-        };
-        const response = await axios.get(url, { params });
-        console.log(response)
-        const data = response.data;
+// exports.calculateShortestDistance =  async(apiToken, start, end) => {
+//     try {
+//         const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}`;
+//         const params = {
+//             access_token: apiToken
+//         };
+//         const response = await axios.get(url, { params });
+//         console.log(response)
+//         const data = response.data;
 
-        // if (!data.routes || data.routes.length === 0) {
-        //     throw new Error('No routes found.');
-        // }
+//         // if (!data.routes || data.routes.length === 0) {
+//         //     throw new Error('No routes found.');
+//         // }
 
-        // let shortestDistance = Infinity;
-        // data.routes.forEach(route => {
-        //     shortestDistance = Math.min(shortestDistance, route.distance);
-        // });
+//         // let shortestDistance = Infinity;
+//         // data.routes.forEach(route => {
+//         //     shortestDistance = Math.min(shortestDistance, route.distance);
+//         // });
 
-        return data;
-    } catch (error) {
-        console.error('Error:', error);
-        return null;
-    }
-}
+//         return data;
+//     } catch (error) {
+//         console.error('Error:', error);
+//         return null;
+//     }
+// }
 
 // const axios = require('axios');
 

@@ -135,3 +135,36 @@ exports.login = async (req, res) => {
         });
     }
 } 
+
+exports.updateLogistic = async (req, res) => {
+    const { logisticId } = req.body;
+    try {
+        const updatedLogistic = await Logistic.findOneAndUpdate(
+            { logisticId: logisticId },
+            req.body,
+            { new: true }
+        );
+        if (!updatedLogistic) {
+            return res.status(404).json({ message: 'Vendor not found' });
+        }
+        res.status(200).json({
+            message: "Logistic Updated successfully",
+            updatedLogistic
+        });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+}
+
+exports.fetchProfile = async(req,res)=>{
+    try{
+        const { logisticId } = req.body;
+        const logistic = await Logistic.findOne({ logisticId });
+        return res.json({
+            message:"Profile fetched successfully",
+            logistic
+        })
+    }catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+} 

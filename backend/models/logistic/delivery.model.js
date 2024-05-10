@@ -30,6 +30,9 @@ const DeliveryPartnerSchema = new mongoose.Schema({
         type: String,
         default: 'pending'
     },
+    currentActiveOrder: {
+        type: Boolean
+    },
     capacity: {
         type: Number
     },
@@ -59,6 +62,9 @@ const DeliveryPartnerSchema = new mongoose.Schema({
     lastLogin: {
         type: Date
     },
+    locationLog: [{
+        type: Boolean
+    }],
     ip: [{
         type: String
     }],

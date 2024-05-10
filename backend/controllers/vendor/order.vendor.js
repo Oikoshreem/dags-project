@@ -3,18 +3,19 @@ const { startOfDay, endOfDay, isBefore } = require('date-fns');
 const Vendor = require('../../models/vendor/vendor.model');
 const Service = require('../../models/vendor/service.model');
 const Commission = require('../../models/admin/commission')
+const Logistic = require('../../models/logistic/delivery.model')
 
 exports.getVendorDashboard = async (req, res) => {
     const vendorId = req.body.vendorId;
     const today = new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
-    const per= await Commission.find();
+    const per = await Commission.find();
 
     try {
         const todayOrders = await Order.find({
             vendorId: vendorId,
             'orderStatus': {
                 $elemMatch: {
-                    status: 'Initiated', 
+                    status: 'Initiated',
                     time: {
                         $gte: startOfDay(today),
                         $lte: endOfDay(today)
@@ -23,17 +24,16 @@ exports.getVendorDashboard = async (req, res) => {
             }
         });
 
-        let totalAmountToday = 0;  //payment generated
+        let totalAmountToday = 0;
         todayOrders.forEach(order => {
-            totalAmountToday += parseFloat(order.amount);
+            totalAmountToday += parseFloat(order.vendorFee);
         });
-
 
         const completedOrders = await Order.find({
             vendorId: vendorId,
             'orderStatus': {
                 $elemMatch: {
-                    status: 'complete',
+                    status: 'readyForDelivery',
                     time: {
                         $gte: startOfDay(today),
                         $lte: endOfDay(today)
@@ -41,14 +41,13 @@ exports.getVendorDashboard = async (req, res) => {
                 }
             }
         });
-
 
         const totalCompletedOrders = completedOrders.length;
 
         const previousDaysOrders = await Order.find({
             vendorId: vendorId,
             'orderDate': {
-                $lt: startOfDay(today)
+                $lt: startOfDay(today) 
             },
             'orderStatus.status': {
                 $nin: ['complete', 'cancelled']
@@ -67,7 +66,7 @@ exports.getVendorDashboard = async (req, res) => {
     }
 }
 
-exports.getAllOrders = async (req, res) => {
+exports.getTodaysOrder = async (req, res) => {
     const { vendorId } = req.body;
     try {
         const allOrders = await Order.find({
@@ -99,9 +98,18 @@ exports.getAllOrders = async (req, res) => {
         })
 
     } catch (error) {
-        console.error("Error retrieving vendor dashboard data:", error);
+        console.error("Error retrieving todays data:", error);
         res.status(500).json({ error: "Internal server error" });
     }
+}
+
+exports.fetchAllOrder = async(req,res)=>{
+    const {vendorId} = req.body;
+    const orders = await Order.find({vendorId})
+    res.json({
+        message:"All Orders for vendor fetched successfully",
+        orders
+    })
 }
 
 exports.getOrder = async (req, res) => {
@@ -135,7 +143,7 @@ exports.getOrder = async (req, res) => {
 
         return res.status(200).json({
             mesage: "order fetched sucessfully",
-            populatedItems, order
+            ordersDetails: populatedItems, order
         })
     } catch {
         return res.status(500).json({
@@ -146,27 +154,7 @@ exports.getOrder = async (req, res) => {
     }
 }
 
-exports.updateVendor = async (req, res) => {
-    const { vendorId } = req.body;
-    try {
-        const updatedVendor = await Vendor.findOneAndUpdate(
-            { vendorId: vendorId },
-            req.body,
-            { new: true }
-        );
-        if (!updatedVendor) {
-            return res.status(404).json({ message: 'Vendor not found' });
-        }
-        res.status(200).json({
-            message: "Vendor Updated successfully",
-            updatedVendor
-        });
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-}
-
-exports.updateStatus = async (req, res) => {
+exports.acceptOrder = async (req, res) => {
     try {
         const { orderId, secretKey } = req.body;
         const order = await Order.findOne({ orderId });
@@ -179,10 +167,18 @@ exports.updateStatus = async (req, res) => {
             return res.status(403).json({ error: "Invalid secret key" });
         }
 
+        //marking his active order as -1
+        const logisticId = order.logisticId[0];
+        const logistic = await Logistic.findOne(logisticId)
+        logistic.currentActiveOrder -= 1
+        await logistic.save();
+
+
         order.orderStatus.push({
             status: "cleaning",
             time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         });
+
 
         await order.save();
 
@@ -192,5 +188,41 @@ exports.updateStatus = async (req, res) => {
             console.error("Error updating order status:", error);
             res.status(500).json({ error: "Failed to update order status" });
         }
+    }
+};
+
+exports.readyForDelivery = async (req, res) => {
+    const { orderId } = req.body;
+    const order = await Order.findOne(orderId)
+    const vendor = await Vendor.findOne({ vendorId: order.vendorId })
+    vendor.currrentActiveOrders -= 1;
+    await vendor.save()
+    order.orderStatus.push({
+        status: "readyForDelivery",
+        time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
+    });
+    await order.save();
+
+    return res.json({
+        message: "Order is ready to be picked up by delivery service",
+        order
+    })
+}
+
+exports.activeOrders = async (req, res) => {
+    try {
+        const { vendorId } = req.body;
+        const orders = await Order.find({ vendorId });
+
+        const activeOrders = orders.filter(order => !order.orderStatus.some(status => status.status === 'cancelled'));
+        const filteredOrders = activeOrders.filter(order => order.orderStatus.length < 4);
+
+        res.json({
+            message: "Active orders fetched successfully",
+            orders: filteredOrders
+        });
+    } catch (error) {
+        console.error('Error fetching active orders:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };

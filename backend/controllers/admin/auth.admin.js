@@ -53,6 +53,7 @@ exports.credentials = async (req, res) => {
                 res.cookie("token", token, options).status(200).json({
                     success: true,
                     token,
+                    phone
                 });
             }
         } else {

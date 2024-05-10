@@ -8,6 +8,9 @@ const ServiceSchema = new mongoose.Schema({
     serviceName: {
         type: String
     },
+    vendorCommission: {
+        type: Number
+    },
     items: [{
         itemId: {
             type: String

@@ -11,7 +11,7 @@ const OrderSchema = new mongoose.Schema({
     orderStatus: [{
         status: {
             type: String,
-            default: "Initiated" //initiated, readyToPickup, pickedUp, cleaning, readyToDelivery, outForDelivery, delivered, cancelled
+            default: "pending" //pending , initiated, readyToPickup, pickedUp, cleaning, readyToDelivery, outForDelivery, delivered, cancelled, refunded
         },
         time: {
             type: Date,
@@ -19,9 +19,19 @@ const OrderSchema = new mongoose.Schema({
         }
     }],
     amount: {
-        type: Number
+        type: Number  //amout exclusive of tax
     },
     discount: {
+        type: String
+    },
+    deliveryFee: {
+        pickup: { type: Number },
+        drop: { type: Number }  //amount that is charged by vendor for this order
+    },
+    vendorFee: {
+        type: String
+    },
+    taxes: {
         type: String
     },
     paymentMode: {
@@ -45,9 +55,9 @@ const OrderSchema = new mongoose.Schema({
     deliveryType: {
         type: String
     },
-    logisticId: {
+    logisticId: [{
         type: String
-    },
+    }],
     secretKey: {
         type: String
     },

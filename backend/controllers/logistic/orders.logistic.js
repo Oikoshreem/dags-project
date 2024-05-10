@@ -1,7 +1,8 @@
 const Order = require('../../models/user/order.model');
-const { startOfDay, endOfDay, isBefore , subDays  } = require('date-fns');
+const { startOfDay, endOfDay, isBefore, subDays } = require('date-fns');
 const Vendor = require('../../models/vendor/vendor.model');
 const Service = require('../../models/vendor/service.model');
+const Logistic = require('../../models/logistic/delivery.model');
 
 exports.getLogisticDashboard = async (req, res) => {
     const logisticId = req.body.logisticId;
@@ -99,39 +100,34 @@ exports.getLogisticDashboard = async (req, res) => {
 }
 
 exports.getAllOrders = async (req, res) => {
-    const { vendorId } = req.body;
+    const { logisticId } = req.body;
     try {
-        const allOrders = await Order.find({
-            vendorId: vendorId,
-            $or: [
-                {
-                    'orderStatus': {
-                        $elemMatch: {
-                            status: 'Initiated',
-                            time: {
-                                $gte: startOfDay(today),
-                                $lte: endOfDay(today)
-                            }
-                        }
-                    }
-                },
-                {
-                    'orderDate': {
-                        $lt: startOfDay(today)
-                    },
-                    'orderStatus.status': {
-                        $nin: ['complete', 'cancelled']
-                    }
-                }
-            ]
-        });
-        res.status(200).json({
-            allOrders
-        })
-
+        const logistic = await Logistic.find(logisticId);
+        const orderIds = logistic.orders
+        const orders = await Order.find({ orderId: { $in: orderIds } });
+        res.json(orders)
     } catch (error) {
-        console.error("Error retrieving logistic dashboard data:", error);
+        console.error("Error retrieving orders data:", error);
         res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+exports.fetchActiveOrders = async (req, res) => {
+    try {
+        const { logisticId } = req.body;
+        const logistic = await Logistic.find(logisticId);
+        const orderIds = logistic.orders
+        const orders = await Order.find({ orderId: { $in: orderIds } });//will get all orders even repeated orders 
+
+        const activeOrders = orders.filter(order => {
+            const orderStatusLength = order.orderStatus.length;
+            return orderStatusLength === 4 || orderStatusLength === 7;
+        });  //if index is 7 then if the same logisticid is present in 4 then that order isd already done at 4 and not consider as active
+
+        return res.status(200).json({ activeOrders });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
@@ -177,26 +173,6 @@ exports.getOrder = async (req, res) => {
     }
 }
 
-exports.updateVendor = async (req, res) => {
-    const { vendorId } = req.body;
-    try {
-        const updatedVendor = await Vendor.findOneAndUpdate(
-            { vendorId: vendorId },
-            req.body,
-            { new: true }
-        );
-        if (!updatedVendor) {
-            return res.status(404).json({ message: 'Vendor not found' });
-        }
-        res.status(200).json({
-            message: "Vendor Updated successfully",
-            updatedVendor
-        });
-    } catch (err) {
-        res.status(400).json({ message: err.message });
-    }
-}
-
 exports.pickedUpStatus = async (req, res) => {
     try {
         const { orderId, secretKey } = req.body;
@@ -205,19 +181,24 @@ exports.pickedUpStatus = async (req, res) => {
         if (!order) {
             return res.status(404).json({ error: "Order not found" });
         }
-        order.secretKey= secretKey;
+        order.secretKey = secretKey;
 
         order.orderStatus.push({
-            status: "pickedup",
+            status: "pickedUp",
             time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         });
 
-        await order.save();
+        const logisticId = order.logisticId[0]
+        const logistic = await Logistic.findOne({ logisticId })
+        logistic.currentActiveOrder += 1;
 
-        res.status(200).json({ 
-            message:"Order updated successfully",
+        await order.save();
+        await logistic.save();
+
+        res.status(200).json({
+            message: "Order updated successfully",
             order
-         });
+        });
     } catch (error) {
         {
             console.error("Error updating order status:", error);
@@ -244,12 +225,19 @@ exports.outOfDeliveryStatus = async (req, res) => {
             time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         });
 
-        await order.save();
 
-        res.status(200).json({ 
-            message:"Order delivered successfully",
+        const logisticId = order.logisticId[1]
+        const logistic = await Logistic.findOne({ logisticId })
+        logistic.currentActiveOrder += 1;
+
+
+        await order.save();
+        await logistic.save();
+
+        res.status(200).json({
+            message: "Order delivered successfully",
             order
-         });
+        });
     } catch (error) {
         {
             console.error("Error updating order status:", error);
