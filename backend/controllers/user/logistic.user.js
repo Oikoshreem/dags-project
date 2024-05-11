@@ -4,7 +4,7 @@ const calculateDistance = require('../../utils/logistic/shortestdistance');
 
 exports.ShortestDistanceforUser = async (req, res) => {
     try {
-        const { latitude, longitude } = req.body;  //user coordinates
+        const { latitude, longitude, orderId } = req.body;  //user coordinates
         const vendors = await Vendor.find({ availability: true });
 
         let shortestDistanceV = Infinity;
@@ -27,6 +27,14 @@ exports.ShortestDistanceforUser = async (req, res) => {
                 closestlogistic = logistic;
             }
         });
+
+        closestvendor.currrentActiveOrders +=1;
+        closestvendor.orders.push= orderId 
+        await closestvendor.save()
+
+        closestlogistic.currrentActiveOrders +=1;
+        closestlogistic.orders.push= orderId 
+        await closestlogistic.save()
 
         res.json({ shortestDistanceV, closestvendor, shortestDistanceL, closestlogistic });
     } catch (err) {

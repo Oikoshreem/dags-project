@@ -9,7 +9,7 @@ const {
     addItemToService,
     createService
 } = require('../controllers/admin/service.admin')
-const { sendBulkEmails} = require("../controllers/admin/user.admin")
+const { sendBulkEmails, getUser} = require("../controllers/admin/user.admin")
 const { logIP, auth } = require('../middlewares/admin/auth')
 
 //auth
@@ -22,6 +22,9 @@ router.post("/sendemail", sendBulkEmails)
 //service
 router.post("/addService", createService)
 router.post("/addItem", addItemToService)
+
+//user
+router.get("/getUser", getUser)
 
 
 module.exports = { adminRoutes: router }; 

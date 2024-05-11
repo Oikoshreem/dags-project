@@ -134,7 +134,7 @@ exports.login = async (req, res) => {
             error: error.message
         });
     }
-} 
+}
 
 exports.updateLogistic = async (req, res) => {
     const { logisticId } = req.body;
@@ -156,15 +156,29 @@ exports.updateLogistic = async (req, res) => {
     }
 }
 
-exports.fetchProfile = async(req,res)=>{
-    try{
+exports.fetchProfile = async (req, res) => {
+    try {
         const { logisticId } = req.body;
         const logistic = await Logistic.findOne({ logisticId });
         return res.json({
-            message:"Profile fetched successfully",
+            message: "Profile fetched successfully",
             logistic
         })
-    }catch (err) {
+    } catch (err) {
         res.status(400).json({ message: err.message });
     }
-} 
+}
+
+exports.switchAvailability = async (req, res) => {
+    try {
+        const { logisticId } = req.body;
+        const logistic = await Logistic.findOne(logisticId)
+        if (!logistic) {
+            return res.status(404).json({ error: 'Logistic not found' });
+        }
+        logistic.availability = !logistic.availability;
+        await logistic.save()
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}

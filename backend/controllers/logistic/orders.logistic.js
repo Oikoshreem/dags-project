@@ -190,7 +190,6 @@ exports.pickedUpStatus = async (req, res) => {
 
         const logisticId = order.logisticId[0]
         const logistic = await Logistic.findOne({ logisticId })
-        logistic.currentActiveOrder += 1;
 
         await order.save();
         await logistic.save();

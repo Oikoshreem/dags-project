@@ -62,7 +62,6 @@ exports.getUser = async (req, res) => {
 exports.createUser = async (req, res) => {
     try {
         const newUser = await User.create(req.body);
-
         return res.status(201).json({ message: "User created successfully.", user: newUser });
     } catch (error) {
         console.error("Error creating user:", error);
@@ -97,4 +96,4 @@ exports.sendBulkEmails = async (req, res) => {
 
 exports.viewFeedbacks = async (req, res) => { }
 
-exports.getUser = async (req, res) => { }
+// exports.getUser = async (req, res) => { }

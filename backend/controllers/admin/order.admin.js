@@ -26,8 +26,9 @@ exports.viewOrders = async (req, res) => {
 exports.getOrder = async (req, res) => {
     try {
         const { orderId } = req.body;
-
         const order = await Order.find({ orderId })
+        const user = await User.findOne(order.userId)
+
         return res.status(200).json({
             mesage: "order fetched sucessfully",
             order

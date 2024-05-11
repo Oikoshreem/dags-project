@@ -3,8 +3,16 @@ const User = require("../../models/user/user.model");
 const Service = require("../../models/vendor/service.model");
 const Commission = require("../../models/admin/commission");
 const Vendor = require("../../models/vendor/vendor.model");
+const Razorpay = require('razorpay');
 
-exports.fetchService = async(req,res)=>{}
+exports.fetchServices = async (req, res) => {
+    try {
+        const service = await Service.find()
+        res.json({ message: "Service fetched successfully", service });
+    } catch (error) {
+        res.status(500).json({ error: 'Could not find service', message: error.message });
+    }
+}
 
 exports.createOrder = async (req, res) => {
     try {
@@ -41,15 +49,13 @@ exports.createOrder = async (req, res) => {
                 unitPrice,
             });
         }
-        console.log("verify",user)
-        // console.log(orderItems)
+        
         const newOrder = new Order(Object.assign({
             items: orderItems,
             userId:phone,
-            vendorId,
             amount:allAmount,
             vendorFee:allCommission,
-            orderStatus: [{ status: "Initiated" }],
+            orderStatus: [{ status: "pending" }], // Set initial status as "pending"
             orderTime: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         }, updates)); 
         await newOrder.save();
@@ -58,10 +64,6 @@ exports.createOrder = async (req, res) => {
         user.orders.push(orderId);
         await user.save(); 
 
-        const vendor = await Vendor.findOne({vendorId})
-        vendor.currrentActiveOrders +=1;
-        await vendor.save()
-
         res.status(201).json({ message: 'Order created successfully', order: newOrder });
     } catch (error) {
         console.error(error);
@@ -69,6 +71,42 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+const razorpay = new Razorpay({
+    key_id: 'YOUR_RAZORPAY_KEY_ID',
+    key_secret: 'YOUR_RAZORPAY_KEY_SECRET'
+});
+
+exports.verifyPaymentAndUpdateOrderStatus = async (orderId, paymentId, paymentSignature) => {
+    try {
+        const payment = await razorpay.payments.fetch(paymentId);
+        const isSignatureValid = verifySignature(paymentSignature, payment); 
+
+        if (!isSignatureValid) {
+            throw new Error('Invalid payment signature');
+        }
+
+        if (payment.status === 'captured') {
+            await Order.findOneAndUpdate(
+                { orderId },
+                { $push: { orderStatus: { status: "initiated" } } }
+            );
+            console.log(`Order with ID ${orderId} payment verified and status updated to initiated.`);
+        } else {
+            res.json({
+                message:`Payment status is not captured. Status: ${payment.status}`
+            })
+        }
+    } catch (error) {
+        console.error(`Error verifying payment for order with ID ${orderId}: ${error.message}`);
+        throw error;
+    }
+};
+
+function verifySignature(signature, payment) {
+    // Implement signature verification logic based on Razorpay's documentation
+    // This function should return true if the signature is valid, false otherwise
+    // Example: return signature === calculateSignature(payment);
+}
 exports.updateOrder = async(req,res)=>{}
 
 exports.cancelOrder = async(req,res)=>{}
