@@ -47,7 +47,7 @@ exports.getVendorDashboard = async (req, res) => {
         const previousDaysOrders = await Order.find({
             vendorId: vendorId,
             'orderDate': {
-                $lt: startOfDay(today) 
+                $lt: startOfDay(today)
             },
             'orderStatus.status': {
                 $nin: ['complete', 'cancelled']
@@ -103,11 +103,11 @@ exports.getTodaysOrder = async (req, res) => {
     }
 }
 
-exports.fetchAllOrder = async(req,res)=>{
-    const {vendorId} = req.body;
-    const orders = await Order.find({vendorId})
+exports.fetchAllOrder = async (req, res) => {
+    const { vendorId } = req.body;
+    const orders = await Order.find({ vendorId })
     res.json({
-        message:"All Orders for vendor fetched successfully",
+        message: "All Orders for vendor fetched successfully",
         orders
     })
 }
@@ -179,7 +179,6 @@ exports.acceptOrder = async (req, res) => {
             time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         });
 
-
         await order.save();
 
         res.status(200).json({ order });
@@ -192,21 +191,36 @@ exports.acceptOrder = async (req, res) => {
 };
 
 exports.readyForDelivery = async (req, res) => {
-    const { orderId } = req.body;
-    const order = await Order.findOne(orderId)
-    const vendor = await Vendor.findOne({ vendorId: order.vendorId })
-    vendor.currrentActiveOrders -= 1;
-    await vendor.save()
-    order.orderStatus.push({
-        status: "readyForDelivery",
-        time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
-    });
-    await order.save();
+    try {
+        const { orderId } = req.body;
+        const order = await Order.findOne(orderId);
 
-    return res.json({
-        message: "Order is ready to be picked up by delivery service",
-        order
-    })
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+
+        const vendor = await Vendor.findOne({ vendorId: order.vendorId });
+
+        if (!vendor) {
+            return res.status(404).json({ error: "Vendor not found" });
+        }
+
+        vendor.currrentActiveOrders -= 1;
+        await vendor.save();
+
+        order.orderStatus.push({
+            status: "readyForDelivery",
+            time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
+        });
+        await order.save();
+
+        return res.json({
+            message: "Order is ready to be picked up by delivery service",
+            order
+        });
+    } catch (error) {
+        return res.status(500).json({ error: "Internal server error", message: error.message });
+    }
 }
 
 exports.activeOrders = async (req, res) => {

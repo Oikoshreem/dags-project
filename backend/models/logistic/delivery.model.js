@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 
 const DeliveryPartnerSchema = new mongoose.Schema({
-    partnerId: {
-        type: String,
-        unique: true
+    logisticId: {
+        type: String
     },
     name: {
         type: String
@@ -67,6 +66,14 @@ const DeliveryPartnerSchema = new mongoose.Schema({
     }],
     ip: [{
         type: String
+    }],
+    activeLog:[{
+        latitude: {
+            type: String
+        },
+        longitude: {
+            type: String
+        }
     }],
     createdOn: {
         type: Date

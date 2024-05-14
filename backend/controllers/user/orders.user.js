@@ -3,44 +3,49 @@ const User = require("../../models/user/user.model");
 const Service = require("../../models/vendor/service.model");
 const Commission = require("../../models/admin/commission");
 const Vendor = require("../../models/vendor/vendor.model");
-const Razorpay = require('razorpay');
+const Razorpay = require("razorpay");
+const razorpay = new Razorpay({
+    key_id: "YOUR_RAZORPAY_KEY_ID",
+    key_secret: "YOUR_RAZORPAY_KEY_SECRET",
+});
 
 exports.fetchServices = async (req, res) => {
     try {
-        const service = await Service.find()
+        const service = await Service.find();
         res.json({ message: "Service fetched successfully", service });
     } catch (error) {
-        res.status(500).json({ error: 'Could not find service', message: error.message });
+        res.status(500).json({
+            error: "Could not find service",
+            message: error.message,
+        });
     }
-}
+};
 
 exports.createOrder = async (req, res) => {
     try {
-        const { orders , vendorId , phone, ...updates } = req.body; 
+        const { orders, vendorId, deliveryFee, phone, ...updates } = req.body;
 
         const orderItems = [];
-        let allAmount=0;
-        let allCommission=0;
+        let allAmount = 0;
+        let allCommission = 0;
         const user = await User.findOne({ phone });
         for (const order of orders) {
             const { itemId, qty, serviceId } = order;
-            const service = await Service.findOne(serviceId )
+            const service = await Service.findOne(serviceId);
             if (!service) {
-                return res.status(404).json({ message: `Service with ID ${serviceId} not found` });
+                return res
+                    .status(404)
+                    .json({ message: `Service with ID ${serviceId} not found` });
             }
-            let unitPrice= 0;
-            let commission = 0;
-            const Amount = service.items.reduce((acc, item) => {
-                if (item.itemId === itemId) {  //check the only item we needed from all the items present
-                    unitPrice=item.unitPrice;
-                    commission = (unitPrice*item.qty*service.vendorCommission)*100
-                    return acc + (item.unitPrice * qty);
-                } 
-                return acc;
-            }, 0);
+            // let unitPrice = 0;
+            // let commission = 0;
+            const item = service.items.find(item => item.itemId === itemId);
+            const unitPrice = item.unitPrice;
+            const commission = (unitPrice * item.qty * service.vendorCommission) / 100;
+            const Amount = unitPrice * qty;
 
-            allAmount+=Amount
-            allCommission += commission
+            allAmount += Amount;
+            allCommission += commission;
 
             orderItems.push({
                 itemId,
@@ -49,55 +54,67 @@ exports.createOrder = async (req, res) => {
                 unitPrice,
             });
         }
-        
-        const newOrder = new Order(Object.assign({
-            items: orderItems,
-            userId:phone,
-            amount:allAmount,
-            vendorFee:allCommission,
-            orderStatus: [{ status: "pending" }], // Set initial status as "pending"
-            orderTime: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
-        }, updates)); 
+
+        const newOrder = new Order(
+            Object.assign(
+                {
+                    items: orderItems,
+                    userId: phone,
+                    amount: allAmount,
+                    deliveryFee: deliveryFee * 2,
+                    vendorId:vendorId,
+                    vendorFee: allCommission,
+                    orderStatus: [{ status: "pending" }], // Set initial status as "pending"
+                    orderTime: new Date(
+                        Date.now() + 5.5 * 60 * 60 * 1000
+                    ).toISOString(),
+                },
+                updates
+            ) 
+        );
         await newOrder.save();
 
         const orderId = newOrder.orderId;
         user.orders.push(orderId);
-        await user.save(); 
+        await user.save();
 
-        res.status(201).json({ message: 'Order created successfully', order: newOrder });
+        res.status(201).json({
+            message: "Order created successfully",
+            order: newOrder,
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
-const razorpay = new Razorpay({
-    key_id: 'YOUR_RAZORPAY_KEY_ID',
-    key_secret: 'YOUR_RAZORPAY_KEY_SECRET'
-});
-
-exports.verifyPaymentAndUpdateOrderStatus = async (orderId, paymentId, paymentSignature) => {
+exports.verifyPayment = async (req, res) => {
+    const { orderId, paymentId, paymentSignature } = req.body
     try {
         const payment = await razorpay.payments.fetch(paymentId);
-        const isSignatureValid = verifySignature(paymentSignature, payment); 
+        const isSignatureValid = verifySignature(paymentSignature, payment);
 
         if (!isSignatureValid) {
-            throw new Error('Invalid payment signature');
+            throw new Error("Invalid payment signature");
         }
 
-        if (payment.status === 'captured') {
+        if (payment.status === "captured") {
             await Order.findOneAndUpdate(
                 { orderId },
                 { $push: { orderStatus: { status: "initiated" } } }
             );
-            console.log(`Order with ID ${orderId} payment verified and status updated to initiated.`);
+            console.log(
+                `Order with ID ${orderId} payment verified and status updated to initiated.`
+            );
         } else {
             res.json({
-                message:`Payment status is not captured. Status: ${payment.status}`
-            })
+                message: `Payment status is not captured. Status: ${payment.status}`,
+            });
         }
     } catch (error) {
-        console.error(`Error verifying payment for order with ID ${orderId}: ${error.message}`);
+        console.error(
+            `Error verifying payment for order with ID ${orderId}: ${error.message}`
+        );
         throw error;
     }
 };
@@ -107,51 +124,50 @@ function verifySignature(signature, payment) {
     // This function should return true if the signature is valid, false otherwise
     // Example: return signature === calculateSignature(payment);
 }
-exports.updateOrder = async(req,res)=>{}
 
-exports.cancelOrder = async(req,res)=>{}
+exports.cancelOrder = async (req, res) => { };
 
 // exports.createOrder = async (req, res) => {
-    //     const { orders, vendorId, ...updates } = req.body; 
-    
-    //     const orderItems = [];
-    //     let totalAmount = 0; 
-        
-    //     for (const order of orders) {
-    //         const { itemId, qty, serviceId } = order;
-        
-    //         const service = await Service.findOne({ serviceId });
-    //         if (!service) {
-    //             return res.status(404).json({ message: `Service with ID ${serviceId} not found` });
-    //         }
-        
-    //         const amount = service.items.reduce((acc, item) => {
-    //             if (item.itemId === itemId) {
-    //                 return acc + (item.unitPrice * qty);
-    //             }
-    //             return acc;
-    //         }, 0);
-        
-    //         orderItems.push({
-    //             itemId,
-    //             qty,
-    //             serviceId,
-    //             unitPrice: service.items.find(item => item.itemId === itemId).unitPrice, // Assuming you need to include unitPrice
-    //             amount // Changed to lower case to avoid conflict with the array declaration
-    //         });
-        
-    //         totalAmount += amount; 
-    //     }
-        
-    //     const newOrder = new Order(Object.assign({
-    //         orderStatus: [{ status: "Initiated" }],
-    //         items: orderItems,
-    //         amount: totalAmount,
-    //         vendorId
-    //     }, updates)); 
-        
-    //     await newOrder.save();
-        
-    //     res.status(201).json({ message: 'Order created successfully', order: newOrder });
-        
-    // };
+//     const { orders, vendorId, ...updates } = req.body;
+
+//     const orderItems = [];
+//     let totalAmount = 0;
+
+//     for (const order of orders) {
+//         const { itemId, qty, serviceId } = order;
+
+//         const service = await Service.findOne({ serviceId });
+//         if (!service) {
+//             return res.status(404).json({ message: `Service with ID ${serviceId} not found` });
+//         }
+
+//         const amount = service.items.reduce((acc, item) => {
+//             if (item.itemId === itemId) {
+//                 return acc + (item.unitPrice * qty);
+//             }
+//             return acc;
+//         }, 0);
+
+//         orderItems.push({
+//             itemId,
+//             qty,
+//             serviceId,
+//             unitPrice: service.items.find(item => item.itemId === itemId).unitPrice, // Assuming you need to include unitPrice
+//             amount // Changed to lower case to avoid conflict with the array declaration
+//         });
+
+//         totalAmount += amount;
+//     }
+
+//     const newOrder = new Order(Object.assign({
+//         orderStatus: [{ status: "Initiated" }],
+//         items: orderItems,
+//         amount: totalAmount,
+//         vendorId
+//     }, updates));
+
+//     await newOrder.save();
+
+//     res.status(201).json({ message: 'Order created successfully', order: newOrder });
+
+// };

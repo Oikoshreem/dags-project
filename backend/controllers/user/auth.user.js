@@ -25,7 +25,7 @@ exports.register = async (req, res) => {
     try {
         const user = await User.create({ phone, name, OTP: hashedOTP });
         console.log("user otp", phoneOTP)
-        // sendOTP(phoneOTP, phone);
+        sendOTP(phoneOTP, phone);
         const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
         user.lastLogin = currentTime
         if (!user.ip.includes(ip)) {

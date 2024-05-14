@@ -3,6 +3,8 @@ const { startOfDay, endOfDay, isBefore, subDays } = require('date-fns');
 const Vendor = require('../../models/vendor/vendor.model');
 const Service = require('../../models/vendor/service.model');
 const Logistic = require('../../models/logistic/delivery.model');
+const User = require('../../models/user/user.model');
+const { generateOTP } = require('../../utils/admin/generateOTP');
 
 exports.getLogisticDashboard = async (req, res) => {
     const logisticId = req.body.logisticId;
@@ -188,11 +190,11 @@ exports.pickedUpStatus = async (req, res) => {
             time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         });
 
-        const logisticId = order.logisticId[0]
-        const logistic = await Logistic.findOne({ logisticId })
+        // const logisticId = order.logisticId[0]
+        // const logistic = await Logistic.findOne({ logisticId })
 
         await order.save();
-        await logistic.save();
+        // await logistic.save();
 
         res.status(200).json({
             message: "Order updated successfully",
@@ -210,6 +212,7 @@ exports.outOfDeliveryStatus = async (req, res) => {
     try {
         const { orderId, secretKey } = req.body;
         const order = await Order.findOne({ orderId });
+        const user = await User.findOne(order.userId)
 
         if (!order) {
             return res.status(404).json({ error: "Order not found" });
@@ -224,6 +227,10 @@ exports.outOfDeliveryStatus = async (req, res) => {
             time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
         });
 
+        const phoneOTP = generateOTP();
+        const hashedOTP = await bcrypt.hash(phoneOTP, 10);
+        user.OTP = hashedOTP;
+        sendOTP(phoneOTP, user.phone);
 
         const logisticId = order.logisticId[1]
         const logistic = await Logistic.findOne({ logisticId })
@@ -231,6 +238,7 @@ exports.outOfDeliveryStatus = async (req, res) => {
 
 
         await order.save();
+        await user.save();
         await logistic.save();
 
         res.status(200).json({
@@ -244,3 +252,32 @@ exports.outOfDeliveryStatus = async (req, res) => {
         }
     }
 };
+
+exports.confirmDelivery = async (req, res) => {
+    try {
+        const { otp, orderId } = req.body;
+        const order = await Order.findOne(orderId)
+        const user = await User.findOne({ phone: order.userId });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        const otpMatch = await bcrypt.compare(otp, user.OTP);
+        if (!otpMatch) {
+            return res.status(401).json({
+                message: "Invalid OTP"
+            });
+        }
+        order.orderStatus.push({
+            status: "delivered",
+            time: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
+        });
+        await order.save();
+
+        return res.json({
+            message: "Order is Delivered Successfully",
+            order
+        })
+    } catch { }
+}

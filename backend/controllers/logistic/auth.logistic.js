@@ -182,3 +182,22 @@ exports.switchAvailability = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
+exports.trackLocation = async (req, res) => {
+    try {
+        const { logisticId, latitude , longitude } = req.body;
+        const logistic = await Logistic.find(logisticId)
+        if (!logistic) {
+            throw new Error("Delivery partner not found");
+        }
+        logistic.geoCoordinates = { latitude, longitude };
+
+        logistic.activeLog.push({ latitude, longitude });
+
+        await logistic.save();
+
+        return { success: true, message: "Location tracked successfully" };
+    } catch {
+        res.status(500).json({ error: 'Internal server error', message: error.message });
+    }
+}

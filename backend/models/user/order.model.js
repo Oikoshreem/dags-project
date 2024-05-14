@@ -24,9 +24,7 @@ const OrderSchema = new mongoose.Schema({
     discount: {
         type: String
     },
-    deliveryFee: {
-        pickup: { type: Number },
-        drop: { type: Number }  //amount that is charged by vendor for this order
+    deliveryFee: { //amount that is charged by vendor for this order
     },
     vendorFee: {
         type: String
