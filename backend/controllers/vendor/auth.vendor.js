@@ -32,10 +32,12 @@ exports.register = async (req, res) => {
             vendor.ip.push(ip);
             await vendor.save();
         }
+        console.log(vendor.vendorId)
         return res.status(200).json({
             success: true,
             message: "OTP sent successfully",
-            vendor
+            vendor,
+            vendorId:vendor.vendorId
         });
     } catch (error) {
         return res.status(500).json({
@@ -173,5 +175,19 @@ exports.updateVendor = async (req, res) => {
         });
     } catch (err) {
         res.status(400).json({ message: err.message });
+    }
+}
+
+exports.switchAvailability = async (req, res) => {
+    try {
+        const { vendorId } = req.body;
+        const vendor = await Vendor.findOne(vendorId)
+        if (!vendor) {
+            return res.status(404).json({ error: 'vendorId not found' });
+        }
+        vendor.availability = !vendor.availability;
+        await vendor.save()
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
     }
 }

@@ -42,14 +42,16 @@ exports.credentials = async (req, res) => {
                     { email: admin.email, id: admin._id },
                     process.env.JWT_SECRET,
                     {
-                        expiresIn: "30m",
+                        expiresIn: "1d",
                     }
                 );
 
                 const options = {
-                    expires: new Date(Date.now() + 30 * 60 * 1000),
+                    expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
                     httpOnly: true,
                 };
+
+                req.session.lastActivityTime = Date.now();
                 res.cookie("token", token, options).status(200).json({
                     success: true,
                     token,
@@ -119,14 +121,17 @@ exports.verifyOTP = async (req, res) => {
             { email: admin.email, id: admin._id },
             process.env.JWT_SECRET,
             {
-                expiresIn: "30m",
+                expiresIn: "1d",  // Token expires in 1 day
             }
         );
 
         const options = {
-            expires: new Date(Date.now() + 30 * 60 * 1000),
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // Cookie expires in 1 day
             httpOnly: true,
         };
+
+        // Initialize session with current time
+        req.session.lastActivityTime = Date.now();
         res.cookie("token", token, options).status(200).json({
             success: true,
             token,

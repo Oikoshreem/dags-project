@@ -5,11 +5,22 @@ const {
     verifyOTP,
     twoSV
 } = require("../controllers/admin/auth.admin")
+
 const {
-    addItemToService,
-    createService
-} = require('../controllers/admin/service.admin')
-const { sendBulkEmails, getUser} = require("../controllers/admin/user.admin")
+} = require('../controllers/admin/logistic.admin')
+
+const { } = require('../controllers/admin/order.admin')
+
+const { addItemToService,
+    createService,
+    editService,
+    editItemInService,
+    fetchServices } = require('../controllers/admin/service.admin')
+
+const { sendBulkEmails, getUser } = require("../controllers/admin/user.admin")
+
+const { } = require("../controllers/admin/vendor.admin")
+
 const { logIP, auth } = require('../middlewares/admin/auth')
 
 //auth
@@ -24,7 +35,7 @@ router.post("/addService", createService)
 router.post("/addItem", addItemToService)
 
 //user
-router.get("/getUser", getUser)
+// router.get("/getUser", getUser)
 
 
 module.exports = { adminRoutes: router }; 

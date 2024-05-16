@@ -62,7 +62,7 @@ exports.createOrder = async (req, res) => {
                     userId: phone,
                     amount: allAmount,
                     deliveryFee: deliveryFee * 2,
-                    vendorId:vendorId,
+                    vendorId: vendorId,
                     vendorFee: allCommission,
                     orderStatus: [{ status: "pending" }], // Set initial status as "pending"
                     orderTime: new Date(
@@ -70,7 +70,7 @@ exports.createOrder = async (req, res) => {
                     ).toISOString(),
                 },
                 updates
-            ) 
+            )
         );
         await newOrder.save();
 
@@ -78,9 +78,17 @@ exports.createOrder = async (req, res) => {
         user.orders.push(orderId);
         await user.save();
 
+        const razorpayOrder = await razorpay.orders.create({
+            amount: allAmount * 100,
+            currency: 'INR',
+            receipt: orderId.toString(),
+            payment_capture: '1'
+        });
+
         res.status(201).json({
             message: "Order created successfully",
             order: newOrder,
+            razorpayOrder: razorpayOrder
         });
     } catch (error) {
         console.error(error);
@@ -95,7 +103,7 @@ exports.verifyPayment = async (req, res) => {
         const isSignatureValid = verifySignature(paymentSignature, payment);
 
         if (!isSignatureValid) {
-            throw new Error("Invalid payment signature");
+            res.json({message: "Invalid payment signature"});
         }
 
         if (payment.status === "captured") {
@@ -119,13 +127,41 @@ exports.verifyPayment = async (req, res) => {
     }
 };
 
-function verifySignature(signature, payment) {
-    // Implement signature verification logic based on Razorpay's documentation
-    // This function should return true if the signature is valid, false otherwise
-    // Example: return signature === calculateSignature(payment);
-}
+const verifySignature = (paymentSignature, payment) => {
+    const { orderId, razorpay_payment_id } = payment;
+    const secret = process.env.RAZORPAY_SECRET_KEY;
+    const generatedSignature = crypto.createHmac('sha256', secret)
+        .update(orderId + "|" + razorpay_payment_id)
+        .digest('hex');
+    return generatedSignature === paymentSignature;
+};
 
-exports.cancelOrder = async (req, res) => { };
+exports.fetchAllOrders = async (req, res) => {
+    try {
+        const { phone } = req.body;
+        const user = await User.findOne(phone);
+        const orders = await Order.find({ userId: phone })
+        const activeOrders = orders.filter(order =>
+            order.orderStatus[order.orderStatus.length - 1].status !== "delivered" &&
+            order.orderStatus[order.orderStatus.length - 1].status !== "cancelled" &&
+            order.orderStatus[order.orderStatus.length - 1].status !== "refunded"
+        );
+
+        const pastOrders = orders.filter(order =>
+            order.orderStatus[order.orderStatus.length - 1].status === "delivered" ||
+            order.orderStatus[order.orderStatus.length - 1].status === "cancelled" ||
+            order.orderStatus[order.orderStatus.length - 1].status === "refunded"
+        );
+
+        res.status(200).json({ activeOrders, pastOrders });
+    } catch (error) {
+        res.status(500).json({
+            error: "Internal Server Error",
+            message: error.message
+        });
+    }
+};
+
 
 // exports.createOrder = async (req, res) => {
 //     const { orders, vendorId, ...updates } = req.body;

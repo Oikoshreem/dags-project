@@ -134,4 +134,26 @@ exports.login = async (req, res) => {
             error: error.message
         });
     }
-} 
+}
+
+exports.addAddress = async (req, res) => {
+    const { phone, latitude, longitude, address, pincode } = req.body;
+
+    try {
+        const user = await User.findOne({ phone });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.geoCoordinates = { latitude, longitude };
+        user.pincode = pincode;
+        user.address.push(address);
+        await user.save();
+
+        return res.status(200).json({ message: "Address added successfully", user });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};

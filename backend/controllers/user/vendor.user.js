@@ -1,2 +1,2 @@
 
-exports.giveReviewTovendor = async (req, res) => { }
+exports.giveReview = async (req, res) => { }

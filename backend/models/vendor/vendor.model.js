@@ -37,6 +37,14 @@ const VendorSchema = new mongoose.Schema({
     availability: {
         type: Boolean
     },
+    geoCoordinates: {
+        latitude: {
+            type: String
+        },
+        longitude: {
+            type: String
+        }
+    },
     currrentActiveOrders: {
         type: Number
     },
@@ -63,4 +71,26 @@ const VendorSchema = new mongoose.Schema({
     }
 }, { versionKey: false });
 
+VendorSchema.pre('save', async function (next) {
+    try {
+        if (!this.vendorId) {
+            const highestVendor = await mongoose.model('Vendor').findOne({}, { vendorId: 1 }, { sort: { vendorId: -1 } });
+            let newVendorId = 'VE1';
+
+            if (highestVendor) {
+                const lastVendorIdNumber = parseInt(highestVendor.vendorId.replace(/[^\d]/g, ''), 10);
+                newVendorId = `VE${lastVendorIdNumber + 1}`;
+            }
+
+            this.vendorId = newVendorId;
+        }
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
+
 module.exports = mongoose.model("Vendor", VendorSchema);
+
+

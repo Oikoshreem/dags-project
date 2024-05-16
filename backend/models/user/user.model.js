@@ -12,6 +12,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    geoCoordinates: {
+        latitude: {
+            type: String
+        },
+        longitude: {
+            type: String
+        }
+    }, 
     phone: {
         type: String,
     },
@@ -21,9 +29,9 @@ const UserSchema = new mongoose.Schema({
     OTP: {
         type: String
     },
-    address: {
+    address:[ {
         type: String
-    },
+    }],
     pincode: {
         type: String
     },
