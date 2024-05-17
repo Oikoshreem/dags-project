@@ -22,6 +22,7 @@ const { sendBulkEmails, getUser } = require("../controllers/admin/user.admin")
 const { } = require("../controllers/admin/vendor.admin")
 
 const { logIP, auth } = require('../middlewares/admin/auth')
+const { createMisc } = require("../controllers/admin/Charges.admin")
 
 //auth
 router.post("/credintials", logIP, credentials)
@@ -36,6 +37,9 @@ router.post("/addItem", addItemToService)
 
 //user
 // router.get("/getUser", getUser)
+
+//logistic
+router.post('/addCharges', createMisc)
 
 
 module.exports = { adminRoutes: router }; 

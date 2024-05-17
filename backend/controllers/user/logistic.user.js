@@ -1,7 +1,7 @@
 const Logistic = require('../../models/logistic/delivery.model');
 const Vendor = require('../../models/vendor/vendor.model');
 const Order = require('../../models/user/order.model');
-const calculateDistance = require('../../utils/logistic/shortestdistance');
+const { calculateDistance } = require('../../utils/logistic/shortestdistance');
 const User = require('../../models/user/user.model');
 const Misc = require("../../models/logistic/miscellaneous")
 
@@ -99,21 +99,36 @@ exports.ShortestDistanceForVendor = async (req, res) => {
 };
 
 exports.findNearestVendor = async (req, res) => {
+    const misc = await Misc.findOne();
     try {
         const { phone } = req.body
-        const misc = await Misc.find();
 
-        const user = await User.findOne(phone)
+        const user = await User.findOne({ phone: phone })
+        if (!user) {
+            return res.status(400).json({
+                message: "No user found"
+            })
+        }
         const vendors = await Vendor.find({
             availability: true,
             verificationStatus: 'active',
-            currentActiveOrders: { $lt: "$capacity" }
+            // currentActiveOrders: { $lt: "$capacity" }
         });
-
+        console.log("hii", misc)
         let shortestDistance = Infinity;
         let closestvendor = null;
+        if (!vendors) {
+            res.json({
+                message: 'No vendors found'
+            })
+        }
         vendors.forEach(vendor => {
-            const distance = calculateDistance(user.geoCoordinates.latitude, user.geoCoordinates.longitude, vendor.geoCoordinates.latitude, vendor.geoCoordinates.longitude);
+            const distance = calculateDistance(
+                user.geoCoordinates.latitude,
+                user.geoCoordinates.longitude,
+                vendor.geoCoordinates.latitude,
+                vendor.geoCoordinates.longitude
+            );
             if (distance < shortestDistance) {
                 shortestDistance = distance;
                 closestvendor = vendor;
@@ -122,17 +137,21 @@ exports.findNearestVendor = async (req, res) => {
 
         let deliveryFee = 0;
         if (shortestDistance <= 5) {
-            deliveryFee = misc.dist["5"];
+            deliveryFee = misc.dist.five;
         } else if (shortestDistance <= 10) {
-            deliveryFee = misc.dist["10"];
+            deliveryFee = misc.dist.ten;
         } else if (shortestDistance <= 20) {
-            deliveryFee = misc.dist["20"];
+            deliveryFee = misc.dist.twenty;
         } else {
-            deliveryFee = misc.dist["30"]; // For distances above 20+
+            deliveryFee = misc.dist.thirty; // For distances above 20+
         }
         res.json({ shortestDistance, closestvendor, deliveryFee });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({
+            message: 'Internal server error',
+            error: error.message,
+            misc
+        });
     }
 }
 

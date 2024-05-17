@@ -6,7 +6,8 @@ const OrderSchema = new mongoose.Schema({
         unique: true
     },
     orderDate: {
-        type: Date,
+        type: Date, 
+        default: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString() //time on which order is placed 
     },
     orderStatus: [{
         status: {
@@ -47,7 +48,7 @@ const OrderSchema = new mongoose.Schema({
         type: String
     },
     pickupDate: {
-        type: Date
+        type: Date  //the date on whioch user selects 
     },
     deliveryDate: {
         type: Date

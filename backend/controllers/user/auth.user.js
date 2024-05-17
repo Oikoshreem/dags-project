@@ -145,10 +145,16 @@ exports.addAddress = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-
-        user.geoCoordinates = { latitude, longitude };
-        user.pincode = pincode;
-        user.address.push(address);
+        if (latitude && longitude) {
+            user.geoCoordinates.latitude = latitude;
+            user.geoCoordinates.longitude = longitude;
+        }
+        if (pincode) {
+            user.pincode = pincode;
+        }
+        if (address) {
+            user.address.push(address);
+        }
         await user.save();
 
         return res.status(200).json({ message: "Address added successfully", user });
@@ -157,3 +163,59 @@ exports.addAddress = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+exports.fetchAddress = async (req, res) => {
+    try {
+        const { phone } = req.body;
+        const user = await User.findOne({ phone: phone })
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        return res.json({
+            address: user.address
+        })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+exports.updateUser = async (req, res) => {
+    const { phone } = req.body;
+    try {
+        const updatedUser = await User.findOneAndUpdate(
+            { phone: phone },
+            req.body,
+            { new: true }
+        );
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({
+            message: "User Updated successfully",
+            updatedUser
+        });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+}
+
+exports.fetchProfile = async (req, res) => {
+    try {
+        const { phone } = req.body
+
+        const user = await User.findOne({ phone: phone })
+
+        res.status(200).json({
+            message: "user fetched successfully",
+            user
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch profile",
+            error: error.message
+        });
+    }
+}

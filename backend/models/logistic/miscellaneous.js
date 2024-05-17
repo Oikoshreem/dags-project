@@ -2,23 +2,49 @@ const mongoose = require("mongoose");
 
 const MiscellaneousSchema = new mongoose.Schema({
     dist: {
-        5: {
-            type: Number
+        five: {
+            type: Number,
+            default: 0
         },
-        10: {
-            type: Number
+        ten: {
+            type: Number,
+            default: 0
         },
-        20: {
-            type: Number
+        twenty: {
+            type: Number,
+            default: 0
         },
-        30: {
-            type: Number
+        thirty: {
+            type: Number,
+            default: 0
         }
-        //add faq related things
+    },
+    faq: [{
+        question: {
+            type: String,
+            required: true
+        },
+        answer: {
+            type: String,
+            required: true
+        }
+    }],
+    tnc: {
+        type: String
+    },
+    shippingPolicy: {
+        type: String
+    },
+    privacyPolicy: {
+        type: String
+    },
+    refundPolicy: {
+        type: String
     },
     createdOn: {
-        type: Date
-    } 
+        type: Date,
+        default: Date.now
+    }
 }, { versionKey: false });
 
 module.exports = mongoose.model("Misc", MiscellaneousSchema);

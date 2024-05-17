@@ -5,8 +5,8 @@ const Commission = require("../../models/admin/commission");
 const Vendor = require("../../models/vendor/vendor.model");
 const Razorpay = require("razorpay");
 const razorpay = new Razorpay({
-    key_id: "YOUR_RAZORPAY_KEY_ID",
-    key_secret: "YOUR_RAZORPAY_KEY_SECRET",
+    key_id: process.env.RAZORPAY_SECRET_ID,
+    key_secret: process.env.RAZORPAY_SECRET_KEY,
 });
 
 exports.fetchServices = async (req, res) => {
@@ -24,14 +24,15 @@ exports.fetchServices = async (req, res) => {
 exports.createOrder = async (req, res) => {
     try {
         const { orders, vendorId, deliveryFee, phone, ...updates } = req.body;
-
         const orderItems = [];
         let allAmount = 0;
         let allCommission = 0;
+
         const user = await User.findOne({ phone });
+
         for (const order of orders) {
             const { itemId, qty, serviceId } = order;
-            const service = await Service.findOne(serviceId);
+            const service = await Service.findOne({ serviceId: serviceId });
             if (!service) {
                 return res
                     .status(404)
@@ -41,9 +42,8 @@ exports.createOrder = async (req, res) => {
             // let commission = 0;
             const item = service.items.find(item => item.itemId === itemId);
             const unitPrice = item.unitPrice;
-            const commission = (unitPrice * item.qty * service.vendorCommission) / 100;
+            const commission = (unitPrice * qty * service.vendorCommission) / 100;
             const Amount = unitPrice * qty;
-
             allAmount += Amount;
             allCommission += commission;
 
@@ -54,7 +54,6 @@ exports.createOrder = async (req, res) => {
                 unitPrice,
             });
         }
-
         const newOrder = new Order(
             Object.assign(
                 {
@@ -77,7 +76,7 @@ exports.createOrder = async (req, res) => {
         const orderId = newOrder.orderId;
         user.orders.push(orderId);
         await user.save();
-
+        console.log(razorpay.orders.create)
         const razorpayOrder = await razorpay.orders.create({
             amount: allAmount * 100,
             currency: 'INR',
@@ -91,8 +90,12 @@ exports.createOrder = async (req, res) => {
             razorpayOrder: razorpayOrder
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        console.error(error)
+        res.status(500).json({
+            message: "Internal server error rip",
+            error: error,
+            e: razorpay
+        });
     }
 };
 
@@ -103,7 +106,7 @@ exports.verifyPayment = async (req, res) => {
         const isSignatureValid = verifySignature(paymentSignature, payment);
 
         if (!isSignatureValid) {
-            res.json({message: "Invalid payment signature"});
+            res.json({ message: "Invalid payment signature" });
         }
 
         if (payment.status === "captured") {
@@ -162,6 +165,88 @@ exports.fetchAllOrders = async (req, res) => {
     }
 };
 
+exports.viewOrder = async (req, res) => {
+    try {
+        const { orderId } = req.body;
+        if (!orderId) {
+            return res.status(400).json({
+                success: false,
+                message: "Order ID is required"
+            });
+        }
+
+        const order = await Order.findOne({ orderId });
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Order fetched successfully",
+            order: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to find order",
+            error: error.message,
+        });
+    }
+};
+
+exports.viewItem = async (req, res) => {
+    try {
+        const { orderId, serviceId, itemId } = req.body;
+
+        if (!serviceId || !itemId) {
+            return res.status(400).json({
+                success: false,
+                message: "Service ID and Item ID are required"
+            });
+        }
+
+        const service = await Service.findOne({ serviceId });
+
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                message: "Service not found"
+            });
+        }
+
+        const item = service.items.find(item => item.itemId === itemId);
+
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found within the service"
+            });
+        }
+
+        const response = {
+            item,
+            service: {
+                serviceId: service.serviceId,
+                serviceName: service.serviceName
+            }
+        };
+
+        return res.status(200).json({
+            success: true,
+            message: "Item and service fetched successfully",
+            data: response
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch item and service",
+            error: error.message,
+        });
+    }
+};
 
 // exports.createOrder = async (req, res) => {
 //     const { orders, vendorId, ...updates } = req.body;

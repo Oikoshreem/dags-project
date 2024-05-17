@@ -19,7 +19,7 @@ const ServiceSchema = new mongoose.Schema({
             type: String
         },
         unitPrice: {
-            type: String
+            type: Number
         }
     }]
 }, { versionKey: false });

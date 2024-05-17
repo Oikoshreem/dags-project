@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Payment Test</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+    <h1>Test Razorpay Payment</h1>
+    <button id="rzp-button">Pay with Razorpay</button>
+
+    <script>
+        document.getElementById('rzp-button').onclick = function(e) {
+            e.preventDefault();
+
+            // Replace with your own test API key from Razorpay Dashboard
+            const razorpayApiKey = process.env;
+
+            // Replace with the order ID generated from your backend
+            const orderId = 'ORDER_ID_FROM_BACKEND';
+
+            const options = {
+                "key": razorpayApiKey,
+                "amount": "100", // Amount in paise (100 paise = 1 INR)
+                "currency": "INR",
+                "name": "Your Company Name",
+                "description": "Test Transaction",
+                "order_id": orderId,
+                "handler": function (response){
+                    alert(response.razorpay_payment_id);
+                    alert(response.razorpay_order_id);
+                    alert(response.razorpay_signature);
+
+                    // After payment success, send payment details to your server
+                    fetch('/verifyPayment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            orderId: response.razorpay_order_id,
+                            paymentId: response.razorpay_payment_id,
+                            paymentSignature: response.razorpay_signature
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log(data);
+                        if (data.message === "Payment verified and order status updated") {
+                            alert('Payment Verified Successfully');
+                        } else {
+                            alert('Payment Verification Failed');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error in verifying payment');
+                    });
+                },
+                "prefill": {
+                    "name": "Test User",
+                    "email": "test.user@example.com",
+                    "contact": "9999999999"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+
+            const rzp1 = new Razorpay(options);
+            rzp1.open();
+        }
+    </script>
+</body>
+</html>
