@@ -40,10 +40,6 @@ const MiscellaneousSchema = new mongoose.Schema({
     },
     refundPolicy: {
         type: String
-    },
-    createdOn: {
-        type: Date,
-        default: Date.now
     }
 }, { versionKey: false });
 

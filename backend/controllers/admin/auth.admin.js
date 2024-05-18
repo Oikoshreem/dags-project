@@ -39,7 +39,7 @@ exports.credentials = async (req, res) => {
                     });
             } else {
                 const token = jwt.sign(
-                    { email: admin.email, id: admin._id },
+                    { email: admin.email, id: admin._id, phone: admin.phone },
                     process.env.JWT_SECRET,
                     {
                         expiresIn: "1d",

@@ -3,6 +3,9 @@ const User = require("../../models/user/user.model");
 const Service = require("../../models/vendor/service.model");
 const Commission = require("../../models/admin/commission");
 const Vendor = require("../../models/vendor/vendor.model");
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 const Razorpay = require("razorpay");
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_SECRET_ID,
@@ -23,7 +26,7 @@ exports.fetchServices = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
     try {
-        const { orders, vendorId, deliveryFee, phone, ...updates } = req.body;
+        const { orders, vendorId, deliveryFee, phone, orderPics, ...updates } = req.body;
         const orderItems = [];
         let allAmount = 0;
         let allCommission = 0;
@@ -54,6 +57,28 @@ exports.createOrder = async (req, res) => {
                 unitPrice,
             });
         }
+
+        //pics data gettign stored
+        const orderPicsUrls = [];
+        if (orderPics.length) {
+            const orderPicsDir = path.join(process.env.FILE_SAVE_PATH, 'orders');
+
+            if (!fs.existsSync(orderPicsDir)) {
+                fs.mkdirSync(orderPicsDir, { recursive: true });
+            }
+
+            for (const pic of orderPics) {
+                const picBuffer = Buffer.from(pic, 'binary');
+                const picFilename = `${uuidv4()}.jpg`; // for unique name for each pic gettting stored
+                const picPath = path.join(orderPicsDir, picFilename);
+
+                fs.writeFileSync(picPath, picBuffer);
+                // const picUrl = `/uploads/orders/${picFilename}`; // Adjust this based on your static files serving setup
+                orderPicsUrls.push(picPath);
+            }
+        }
+
+
         const newOrder = new Order(
             Object.assign(
                 {
@@ -63,6 +88,7 @@ exports.createOrder = async (req, res) => {
                     deliveryFee: deliveryFee * 2,
                     vendorId: vendorId,
                     vendorFee: allCommission,
+                    ordersPic: orderPicsUrls,
                     orderStatus: [{ status: "pending" }], // Set initial status as "pending"
                     orderTime: new Date(
                         Date.now() + 5.5 * 60 * 60 * 1000

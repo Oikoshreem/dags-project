@@ -158,7 +158,7 @@ exports.fetchProfile = async (req, res) => {
     }
 }
 
-exports.updateVendor = async (req, res) => {
+exports.updateProfile = async (req, res) => {
     const { vendorId } = req.body;
     try {
         const updatedVendor = await Vendor.findOneAndUpdate(

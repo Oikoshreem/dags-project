@@ -56,3 +56,21 @@ exports.updateLogistic = async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 }
+
+exports.createLogistic = async (req, res) => {
+    try {
+        const logisticData = { ...req.body };
+        const newLogistic = new Logistic(logisticData);
+        await newLogistic.save();
+
+        res.status(201).json({
+            message: 'Logistic record created successfully',
+            data: newLogistic
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error creating logistic ',
+            error: error.message
+        });
+    }
+};

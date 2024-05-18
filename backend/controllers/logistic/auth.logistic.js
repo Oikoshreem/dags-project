@@ -136,7 +136,7 @@ exports.login = async (req, res) => {
     }
 }
 
-exports.updateLogistic = async (req, res) => {
+exports.updateProfile = async (req, res) => {
     const { logisticId } = req.body;
     try {
         const updatedLogistic = await Logistic.findOneAndUpdate(

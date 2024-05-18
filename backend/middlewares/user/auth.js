@@ -1,7 +1,6 @@
-const Logistic = require('../../models/logistic/delivery.model');
+const User = require('../../models/user/user.model');
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-
 exports.auth = async (req, res, next) => {
     try {
         const token =
@@ -16,7 +15,7 @@ exports.auth = async (req, res, next) => {
         }
         try {
             const decode = jwt.verify(token, process.env.JWT_SECRET);
-            req.logistic = decode;
+            req.user = decode;
         }
         catch (error) {
             return res.status(401).json({
@@ -35,22 +34,3 @@ exports.auth = async (req, res, next) => {
         });
     }
 }
-
-exports.verifyLogistic = async (req, res, next) => {
-    try {
-        const { logisticId } = req.body;
-        const logistic = await Logistic.findOne({ logisticId });
-
-        if (!logistic) {
-            return res.status(404).json({ error: "Logistic not found" });
-        }
-
-        if (logistic.verificationStatus !== 'active') {
-            return res.status(403).json({ error: "Logistic is not verified" });
-        }
-        next();
-    } catch (error) {
-        console.error("Error verifying Logistic:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-};

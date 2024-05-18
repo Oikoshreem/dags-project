@@ -13,7 +13,7 @@ const DeliveryPartnerSchema = new mongoose.Schema({
     phone: {
         type: String
     },
-    profile_pic: {
+    profilePic: {
         type: String
     },
     OTP: {
@@ -33,7 +33,8 @@ const DeliveryPartnerSchema = new mongoose.Schema({
         type: Boolean
     },
     capacity: {
-        type: Number
+        type: Number,
+        default:30
     },
     availability: {
         type: Boolean

@@ -4,7 +4,7 @@ require("dotenv").config();
 
 exports.logIP = async (req, res, next) => {
   const ip = req.ip;
-  console.log("hi", ip)
+  // console.log("hi", ip)
   const { email } = req.body
   const admin = await Admin.findOne({ email: email });
   if (!admin) {

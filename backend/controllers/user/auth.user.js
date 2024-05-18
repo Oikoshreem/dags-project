@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const User = require("../../models/user/user.model");
 const bcrypt = require("bcrypt");
+const fs = require('fs');
+const path = require('path');
 const { generateOTP, sendOTP } = require("../../utils/admin/generateOTP");
 
 exports.register = async (req, res) => {
@@ -181,11 +183,16 @@ exports.fetchAddress = async (req, res) => {
 }
 
 exports.updateUser = async (req, res) => {
-    const { phone } = req.body;
+    const { phone, profilePic, ...updates } = req.body;
     try {
+        const imagePath = path.join(process.env.FILE_SAVE_PATH, `${phone}.jpg`);
+        if (profilePic) {
+            fs.writeFileSync(imagePath, profile_data, 'base64');
+            updates.profile_pic_url = imagePath;
+        }
         const updatedUser = await User.findOneAndUpdate(
             { phone: phone },
-            req.body,
+            updates,
             { new: true }
         );
         if (!updatedUser) {
@@ -196,7 +203,10 @@ exports.updateUser = async (req, res) => {
             updatedUser
         });
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        res.status(400).json({
+            message: "Internal Server Error",
+            error: err.message
+        });
     }
 }
 

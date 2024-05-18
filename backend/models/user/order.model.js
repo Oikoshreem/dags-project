@@ -53,7 +53,7 @@ const OrderSchema = new mongoose.Schema({
     deliveryDate: {
         type: Date
     },
-    deliveryType: {
+    razorpayKey: {
         type: String
     },
     logisticId: [{

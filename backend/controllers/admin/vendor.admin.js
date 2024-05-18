@@ -1,6 +1,6 @@
 const Vendor = require('../../models/vendor/vendor.model');
 
-exports.fetchVendor = async (req, res) => {
+exports.fetchAllVendor = async (req, res) => {
     try {
         const vendors = await Vendor.find();
         return res.status(200).json({
@@ -36,7 +36,7 @@ exports.getVendor = async (req, res) => {
     }
 }
 
-exports.updateVendor = async (req, res) => {
+exports.editVendor = async (req, res) => {
     const { vendorId } = req.body;
     try {
         const updatedVendor = await Vendor.findOneAndUpdate(
@@ -55,3 +55,22 @@ exports.updateVendor = async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 }
+
+exports.createvendor = async (req, res) => {
+    try {
+        const vendorData = { ...req.body };
+        const newVendor = new Vendor(vendorData);
+        await newVendor.save();
+
+        res.status(201).json({
+            message: 'Vendor record created successfully',
+            data: newVendor
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error creating vendor ',
+            error: error.message
+        });
+    }
+};
+
