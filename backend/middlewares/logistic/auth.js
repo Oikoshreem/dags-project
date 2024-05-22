@@ -17,6 +17,7 @@ exports.auth = async (req, res, next) => {
         try {
             const decode = jwt.verify(token, process.env.JWT_SECRET);
             req.logistic = decode;
+            console.log(req.logistic)
         }
         catch (error) {
             return res.status(401).json({
@@ -38,8 +39,8 @@ exports.auth = async (req, res, next) => {
 
 exports.verifyLogistic = async (req, res, next) => {
     try {
-        const { logisticId } = req.body;
-        const logistic = await Logistic.findOne({ logisticId });
+        const { phone } = req.logistic;
+        const logistic = await Logistic.findOne({ phone });
 
         if (!logistic) {
             return res.status(404).json({ error: "Logistic not found" });

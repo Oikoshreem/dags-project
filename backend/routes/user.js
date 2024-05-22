@@ -10,10 +10,10 @@ const {
     updateUser
 } = require("../controllers/user/auth.user")
 
-const { createOrder, fetchServices, verifyPayment, fetchAllOrders, viewItem } = require("../controllers/user/orders.user")
+const { createOrder, fetchServices, verifyPayment, fetchAllOrders, viewItem, viewOrder } = require("../controllers/user/orders.user")
 
 const { auth } = require('../middlewares/user/auth')
-const { findNearestVendor, ShortestDistanceForVendor } = require("../controllers/user/logistic.user")
+const { findNearestVendor, ShortestDistanceForVendor, ShortestDistanceforUser } = require("../controllers/user/logistic.user")
 const { giveReview } = require("../controllers/user/vendor.user")
 
 router.post("/signup", register)
@@ -35,8 +35,8 @@ router.get("/viewItem", auth, viewItem)
 //logistic
 router.post("/findNearestVendor", auth, findNearestVendor)
 router.post("/ShortestDistanceForVendor", auth, ShortestDistanceForVendor)
-router.post("/findNearestVendor", auth, findNearestVendor)
+router.post("/ShortestDistanceforUser", auth, ShortestDistanceforUser)
 
-router.post("/findNearestVendor", auth, giveReview)
+router.post("/giveReview", auth, giveReview)
 
 module.exports = { userRoutes: router }

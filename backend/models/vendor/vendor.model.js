@@ -46,7 +46,8 @@ const VendorSchema = new mongoose.Schema({
         }
     },
     currrentActiveOrders: {
-        type: Number
+        type: Number,
+        default:0
     },
     address: {
         type: String

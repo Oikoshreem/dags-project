@@ -38,8 +38,8 @@ exports.auth = async (req, res, next) => {
 
 exports.verifyVendor = async (req, res, next) => {
     try {
-        const { vendorId } = req.body;
-        const vendor = await Vendor.findOne({ vendorId });
+        const { phone } = req.vendor;
+        const vendor = await Vendor.findOne({ phone });
 
         if (!vendor) {
             return res.status(404).json({ error: "Vendor not found" });

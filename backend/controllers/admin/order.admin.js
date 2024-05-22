@@ -212,7 +212,7 @@ exports.fetchOrdersByDateRange = async (req, res) => {
 //         const totalOrders = await Orders.countDocuments({
 //             orderDate: { $gte: date, $lt: nextDay }
 //         }).sort({ orderDate: 1 });
-
+ 
 //         res.json({ totalOrders });
 //     } catch (err) {
 //         console.error(err);

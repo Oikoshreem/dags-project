@@ -4,7 +4,8 @@ const Vendor = require('../../models/vendor/vendor.model');
 const Service = require('../../models/vendor/service.model');
 const Logistic = require('../../models/logistic/delivery.model');
 const User = require('../../models/user/user.model');
-const { generateOTP } = require('../../utils/admin/generateOTP');
+const { sendOTP,generateOTP } = require('../../utils/admin/generateOTP');
+const bcrypt = require('bcrypt')
 
 exports.getLogisticDashboard = async (req, res) => {
     const logisticId = req.body.logisticId;
@@ -212,7 +213,7 @@ exports.outOfDeliveryStatus = async (req, res) => {
     try {
         const { orderId, secretKey } = req.body;
         const order = await Order.findOne({ orderId });
-        const user = await User.findOne(order.userId)
+        const user = await User.findOne({ phone: order.userId })
 
         if (!order) {
             return res.status(404).json({ error: "Order not found" });
@@ -256,7 +257,7 @@ exports.outOfDeliveryStatus = async (req, res) => {
 exports.confirmDelivery = async (req, res) => {
     try {
         const { otp, orderId } = req.body;
-        const order = await Order.findOne(orderId)
+        const order = await Order.findOne({orderId})
         const user = await User.findOne({ phone: order.userId });
         if (!user) {
             return res.status(404).json({

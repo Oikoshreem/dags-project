@@ -30,7 +30,8 @@ const DeliveryPartnerSchema = new mongoose.Schema({
         default: 'pending'
     },
     currentActiveOrder: {
-        type: Boolean
+        type: Number,
+        default:0
     },
     capacity: {
         type: Number,

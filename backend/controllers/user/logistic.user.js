@@ -8,15 +8,16 @@ const Misc = require("../../models/logistic/miscellaneous")
 exports.ShortestDistanceforUser = async (req, res) => {
     try {
         const { orderId, vendorId } = req.body;
-        const vendor = await Vendor.findOne(vendorId);
+        const vendor = await Vendor.findOne({ vendorId });
         const order = await Order.findOne({ orderId });
         const user = await User.findOne({ phone: order.userId })
 
         const logistics = await Logistic.find({
             availability: true,
-            verificationStatus: 'active',
-            currentActiveOrders: { $lt: "$capacity" }
+            verificationStatus: "active",
+            // currentActiveOrders: { $lt: "$capacity" }
         });
+        console.log(logistics)
         let shortestDistanceL = Infinity;
         let closestlogistic = null;
         logistics.forEach(logistic => {
@@ -29,15 +30,23 @@ exports.ShortestDistanceforUser = async (req, res) => {
 
         vendor.currrentActiveOrders += 1;
         vendor.orders.push(orderId) //array of orders for vendor
-        await vendor.save()
 
+        console.log("eeueueueue", closestlogistic)
+        if (!closestlogistic.currentActiveOrders) {
+            closestlogistic.currrentActiveOrders = 0;
+        }
         closestlogistic.currrentActiveOrders += 1;
         closestlogistic.orders.push(orderId)
-        await closestlogistic.save()
 
-        order.status = "readyToPickup"
+        order.orderStatus.push({
+            status: "readyToPickup",
+            time: new Date(Date.now() + (5.5 * 60 * 60 * 1000))
+        });
         order.logisticId.push(closestlogistic.logisticId)
         order.vendorId = vendor.vendorId
+
+        await closestlogistic.save()
+        await vendor.save()
         await order.save()
 
         res.json({ shortestDistanceL, closestlogistic, vendor });
@@ -58,7 +67,7 @@ exports.ShortestDistanceForVendor = async (req, res) => {
         }
 
         const vendorId = order.vendorId;
-        const vendor = await Vendor.findOne(vendorId);
+        const vendor = await Vendor.findOne({vendorId});
 
         if (!vendor) {
             return res.status(404).json({ message: "Vendor not found" });
@@ -67,7 +76,7 @@ exports.ShortestDistanceForVendor = async (req, res) => {
         const logistics = await Logistic.find({
             availability: true,
             verificationStatus: 'active',
-            currentActiveOrders: { $lt: "$capacity" }
+            // currentActiveOrders: { $lt: "$capacity" }
         });
 
         let shortestDistanceL = Infinity;

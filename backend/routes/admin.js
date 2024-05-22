@@ -80,8 +80,8 @@ router.post("/additionaldetails", auth, logIP, checkInactivity, additionaldetail
 
 
 //logistic
-router.post("/fetchLogistic", auth, logIP, checkInactivity, fetchLogistic)
-router.post("/getLogistic", auth, logIP, checkInactivity, getLogistic)
+router.get("/fetchLogistic", auth, logIP, checkInactivity, fetchLogistic)
+router.get("/getLogistic", auth, logIP, checkInactivity, getLogistic)
 router.post("/updateLogistic", auth, logIP, checkInactivity, updateLogistic)
 router.post("/createLogistic", auth, logIP, checkInactivity, createLogistic)
 
@@ -110,7 +110,7 @@ router.post("/sendemail", auth, logIP, checkInactivity, sendBulkEmails)
 router.get("/viewFeedbacks", auth, logIP, checkInactivity, viewFeedbacks)
 
 //vendors
-router.get("/fetchAllVendors", auth, logIP, checkInactivity, fetchAllVendor)
+router.get("/fetchVendors", auth, logIP, checkInactivity, fetchAllVendor)
 router.get("/getVendor", auth, logIP, checkInactivity, getVendor)
 router.put("/editVendor", auth, logIP, checkInactivity, editVendor)
 router.post("/createvendor", auth, logIP, checkInactivity, createvendor)

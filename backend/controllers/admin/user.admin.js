@@ -93,7 +93,7 @@ exports.sendBulkEmails = async (req, res) => {
         return res.status(500).json({ message: "Internal server error." });
     }
 };
-
+ 
 exports.viewFeedbacks = async (req, res) => { }
 
 // exports.getUser = async (req, res) => { }

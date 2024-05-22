@@ -169,7 +169,7 @@ exports.acceptOrder = async (req, res) => {
 
         //marking his active order as -1
         const logisticId = order.logisticId[0];
-        const logistic = await Logistic.findOne(logisticId)
+        const logistic = await Logistic.findOne({logisticId})
         logistic.currentActiveOrder -= 1
         await logistic.save();
 
@@ -193,7 +193,7 @@ exports.acceptOrder = async (req, res) => {
 exports.readyForDelivery = async (req, res) => {
     try {
         const { orderId } = req.body;
-        const order = await Order.findOne(orderId);
+        const order = await Order.findOne({orderId});
 
         if (!order) {
             return res.status(404).json({ error: "Order not found" });

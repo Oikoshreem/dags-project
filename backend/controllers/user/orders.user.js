@@ -59,26 +59,26 @@ exports.createOrder = async (req, res) => {
         }
 
         //pics data gettign stored
-        const orderPicsUrls = [];
-        if (orderPics.length) {
-            const orderPicsDir = path.join(process.env.FILE_SAVE_PATH, 'orders');
+        // const orderPicsUrls = [];
+        // if (orderPics.length) {
+        //     const orderPicsDir = path.join(process.env.FILE_SAVE_PATH, 'orders');
 
-            if (!fs.existsSync(orderPicsDir)) {
-                fs.mkdirSync(orderPicsDir, { recursive: true });
-            }
+        //     if (!fs.existsSync(orderPicsDir)) {
+        //         fs.mkdirSync(orderPicsDir, { recursive: true });
+        //     }
 
-            for (const pic of orderPics) {
-                const picBuffer = Buffer.from(pic, 'binary');
-                const picFilename = `${uuidv4()}.jpg`; // for unique name for each pic gettting stored
-                const picPath = path.join(orderPicsDir, picFilename);
+        //     for (const pic of orderPics) {
+        //         const picBuffer = Buffer.from(pic, 'binary');
+        //         const picFilename = `${uuidv4()}.jpg`; // for unique name for each pic gettting stored
+        //         const picPath = path.join(orderPicsDir, picFilename);
 
-                fs.writeFileSync(picPath, picBuffer);
-                // const picUrl = `/uploads/orders/${picFilename}`; // Adjust this based on your static files serving setup
-                orderPicsUrls.push(picPath);
-            }
-        }
+        //         fs.writeFileSync(picPath, picBuffer);
+        //         // const picUrl = `/uploads/orders/${picFilename}`; // Adjust this based on your static files serving setup
+        //         orderPicsUrls.push(picPath);
+        //     }
+        // }
 
-
+        const orderPicsUrls = await saveOrderPics(orderPics);
         const newOrder = new Order(
             Object.assign(
                 {
@@ -99,7 +99,7 @@ exports.createOrder = async (req, res) => {
         );
         await newOrder.save();
 
-        const orderId = newOrder.orderId;
+        const orderId = newOrder.orderId; //to push newly created order into user data
         user.orders.push(orderId);
         await user.save();
         console.log(razorpay.orders.create)
@@ -124,6 +124,30 @@ exports.createOrder = async (req, res) => {
         });
     }
 };
+
+async function saveOrderPics(orderPics) {
+    if (!Array.isArray(orderPics) || orderPics.length === 0) {
+        return [];
+    }
+
+    const orderPicsUrls = [];
+    const orderPicsDir = path.join(process.env.FILE_SAVE_PATH, 'orders');
+
+    if (!fs.existsSync(orderPicsDir)) {
+        fs.mkdirSync(orderPicsDir, { recursive: true });
+    }
+
+    for (const pic of orderPics) {
+        const picBuffer = Buffer.from(pic, 'binary');
+        const picFilename = `${uuidv4()}.jpg`;
+        const picPath = path.join(orderPicsDir, picFilename);
+
+        fs.writeFileSync(picPath, picBuffer);
+        orderPicsUrls.push(picPath);
+    }
+
+    return orderPicsUrls;
+}
 
 exports.verifyPayment = async (req, res) => {
     const { orderId, paymentId, paymentSignature } = req.body
