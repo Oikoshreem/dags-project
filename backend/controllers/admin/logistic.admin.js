@@ -21,9 +21,9 @@ exports.fetchLogistic = async (req, res) => {
 exports.getLogistic = async (req, res) => {
 
     try {
-        const { partnerId } = req.body;
+        const { logisticId } = req.body;
 
-        const logistic = await Logistic.find({ partnerId })
+        const logistic = await Logistic.find({ logisticId })
         return res.status(200).json({
             mesage: "Logistic partner fetched sucessfully",
             logistic
@@ -38,15 +38,15 @@ exports.getLogistic = async (req, res) => {
 }
 
 exports.updateLogistic = async (req, res) => {
-    const { partnerId } = req.body;
+    const { logisticId } = req.body;
     try {
         const updateLogistic = await Logistic.findOneAndUpdate(
-            { partnerId: partnerId },
+            { logisticId: logisticId },
             req.body,
             { new: true }
         );
         if (!updateLogistic) {
-            return res.status(404).json({ message: 'Order not found' });
+            return res.status(404).json({ message: 'Logistic not found' });
         }
         res.status(200).json({
             message: "Logistic Partner Updated successfully",
@@ -59,17 +59,26 @@ exports.updateLogistic = async (req, res) => {
 
 exports.createLogistic = async (req, res) => {
     try {
-        const logisticData = { ...req.body };
-        const newLogistic = new Logistic(logisticData);
-        await newLogistic.save();
-
+        const { email, phone } = req.body;
+        if (!phone) {
+            return res.status(400).json({ message: "Please enter a mobile number." });
+        }
+        let existingPhone = await Logistic.findOne({ phone });
+        let existingEmail;
+        if (email) {
+            existingEmail = await Logistic.findOne({ email });
+        }
+        if (existingPhone || existingEmail) {
+            return res.status(400).json({ message: "Logistic already exists." });
+        }
+        const newLogistic = await Logistic.create(req.body);
         res.status(201).json({
             message: 'Logistic record created successfully',
             data: newLogistic
         });
     } catch (error) {
         res.status(500).json({
-            message: 'Error creating logistic ',
+            message: 'Error creating Logistic ',
             error: error.message
         });
     }

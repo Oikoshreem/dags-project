@@ -25,7 +25,7 @@ exports.register = async (req, res) => {
     const hashedOTP = await bcrypt.hash(phoneOTP, 10);
 
     try {
-        const user = await User.create({ phone, name, OTP: hashedOTP });
+        const user = await User.create({ phone, name, OTP: hashedOTP, userId: phone });
         console.log("user otp", phoneOTP)
         sendOTP(phoneOTP, phone);
         const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();

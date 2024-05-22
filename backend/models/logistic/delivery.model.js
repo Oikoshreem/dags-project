@@ -27,7 +27,7 @@ const DeliveryPartnerSchema = new mongoose.Schema({
     },
     verificationStatus: {
         type: String,
-        default: 'pending'
+        default: 'pending'    // 1 - pending 2- active 3- rejected 4- inactive
     },
     currentActiveOrder: {
         type: Number,

@@ -22,10 +22,10 @@ exports.fetchUsers = async (req, res) => {
 }
 
 exports.editUser = async (req, res) => {
-    const phone = req.body.phone;
+    const userId = req.body.userId;
     try {
         const updatedUser = await User.findOneAndUpdate(
-            { phone: phone },
+            { userId: userId },
             req.body,
             { new: true }
         );
@@ -61,7 +61,21 @@ exports.getUser = async (req, res) => {
 
 exports.createUser = async (req, res) => {
     try {
+        const { email, phone } = req.body;
+        if (!phone) {
+            return res.status(400).json({ message: "Please enter a mobile number." });
+        }
+        let existingPhone = await Logistic.findOne({ phone });
+        let existingEmail;
+        if (email) {
+            existingEmail = await Logistic.findOne({ email });
+        }
+        if (existingPhone || existingEmail) {
+            return res.status(400).json({ message: "User already exists." });
+        }
         const newUser = await User.create(req.body);
+        newUser.userId = phone;
+        await newUser.save();
         return res.status(201).json({ message: "User created successfully.", user: newUser });
     } catch (error) {
         console.error("Error creating user:", error);
@@ -82,7 +96,7 @@ exports.sendBulkEmails = async (req, res) => {
             // to: emails,
             subject: title,
             html: bulkEmail(),
-            bcc: emails 
+            bcc: emails
         };
 
         const emailResponse = await mailSender(emailOptions);
@@ -93,7 +107,7 @@ exports.sendBulkEmails = async (req, res) => {
         return res.status(500).json({ message: "Internal server error." });
     }
 };
- 
+
 exports.viewFeedbacks = async (req, res) => { }
 
 // exports.getUser = async (req, res) => { }

@@ -58,10 +58,19 @@ exports.editVendor = async (req, res) => {
 
 exports.createvendor = async (req, res) => {
     try {
-        const vendorData = { ...req.body };
-        const newVendor = new Vendor(vendorData);
-        await newVendor.save();
-
+        const { email, phone } = req.body;
+        if (!phone) {
+            return res.status(400).json({ message: "Please enter a mobile number." });
+        }
+        let existingPhone = await Logistic.findOne({ phone });
+        let existingEmail;
+        if (email) {
+            existingEmail = await Logistic.findOne({ email });
+        }
+        if (existingPhone || existingEmail) {
+            return res.status(400).json({ message: "Vendor already exists." });
+        }
+        const newVendor = await Vendor.create(req.body);
         res.status(201).json({
             message: 'Vendor record created successfully',
             data: newVendor
@@ -73,4 +82,3 @@ exports.createvendor = async (req, res) => {
         });
     }
 };
-

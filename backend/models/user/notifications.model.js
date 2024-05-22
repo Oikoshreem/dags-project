@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const NotificationtSchema = new mongoose.Schema({
-    Id: {
+    id: {
         type: String
     },
     channel: {

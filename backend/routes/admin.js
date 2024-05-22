@@ -82,7 +82,7 @@ router.post("/additionaldetails", auth, logIP, checkInactivity, additionaldetail
 //logistic
 router.get("/fetchLogistic", auth, logIP, checkInactivity, fetchLogistic)
 router.get("/getLogistic", auth, logIP, checkInactivity, getLogistic)
-router.post("/updateLogistic", auth, logIP, checkInactivity, updateLogistic)
+router.put("/updateLogistic", auth, logIP, checkInactivity, updateLogistic)
 router.post("/createLogistic", auth, logIP, checkInactivity, createLogistic)
 
 //orders

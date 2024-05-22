@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const UserSchema = new mongoose.Schema({
     userId: {
         type: String,
-        unique: true
     },
     name: {
         type: String,
@@ -36,7 +35,7 @@ const UserSchema = new mongoose.Schema({
         type: String
     },
     status: {
-        type: String
+        type: String  //active and inactive 
     },
     orders: [{
         type: String

@@ -10,7 +10,6 @@ const VendorSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        unique: true
     },
     phone: {
         type: String
@@ -26,7 +25,7 @@ const VendorSchema = new mongoose.Schema({
     },
     verificationStatus: {
         type: String,
-        default: 'pending'
+        default: 'pending'  // 1 - pending 2- active 3- rejected 4- inactive
     },
     OTP: {
         type: String
