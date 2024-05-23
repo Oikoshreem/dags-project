@@ -1,6 +1,7 @@
 const Order = require('../../models/user/order.model');
 const User = require('../../models/user/user.model');
 const Vendor = require('../../models/vendor/vendor.model');
+const Logistic = require('../../models/logistic/delivery.model');
 
 exports.viewOrders = async (req, res) => {
     try {
@@ -62,7 +63,6 @@ exports.getOrder = async (req, res) => {
         const logisticDetails = await Logistic.find({
             logisticId: { $in: order.logisticId }
         });
-
         return res.status(200).json({
             success: true,
             message: "Order fetched successfully",
@@ -119,8 +119,8 @@ exports.getCancelledOrders = async (req, res) => {
 
 exports.createOrder = async (req, res) => {
     try {
-        const { userid, ...updates } = req.body;
-        const user = await User.findOne({ phone: userid });
+        const { phone, ...updates } = req.body;
+        const user = await User.findOne({ phone: phone });
 
         if (!user) {
             return res.status(404).json({
@@ -128,12 +128,16 @@ exports.createOrder = async (req, res) => {
                 message: "User not found",
             });
         }
-
         const currentTime = new Date(Date.now() + (330 * 60000)).toISOString();
+        updates.orderStatus = [{
+            status: "pending",
+            time: currentTime
+        }];
+
         const order = await Order.create({
-            userId: userid,
+            userId: phone,
             orderDate: currentTime,
-            updates
+            ...updates,
         });
 
         res.status(201).json({

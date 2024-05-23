@@ -60,7 +60,8 @@ const {
     addFAQ,
     updateFAQ,
     deleteFAQ,
-    additionaldetails
+    additionaldetails,
+    fetchdDeliverCharges
 } = require("../controllers/admin/Charges.admin")
 
 //auth
@@ -77,6 +78,7 @@ router.post("/addFAQ", auth, logIP, checkInactivity, addFAQ)
 router.post("/updateFAQ", auth, logIP, checkInactivity, updateFAQ)
 router.post("/deleteFAQ", auth, logIP, checkInactivity, deleteFAQ)
 router.post("/additionaldetails", auth, logIP, checkInactivity, additionaldetails)
+router.get("/fetchdDeliverCharges", auth, logIP, checkInactivity, fetchdDeliverCharges)
 
 
 //logistic
@@ -86,7 +88,7 @@ router.put("/updateLogistic", auth, logIP, checkInactivity, updateLogistic)
 router.post("/createLogistic", auth, logIP, checkInactivity, createLogistic)
 
 //orders
-router.get("/viewOrders", auth, logIP, checkInactivity, viewOrders)
+router.get("/fetchOrders", auth, logIP, checkInactivity, viewOrders)
 router.get("/getOrder", auth, logIP, checkInactivity, getOrder)
 router.post("/updateOrder", auth, logIP, checkInactivity, updateOrder)
 router.get("/getCancelledOrders", auth, logIP, checkInactivity, getCancelledOrders)

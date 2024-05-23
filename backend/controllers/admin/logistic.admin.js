@@ -83,3 +83,22 @@ exports.createLogistic = async (req, res) => {
         });
     }
 };
+
+exports.getLogistic = async (req, res) => {
+
+    try {
+        const { logisticId } = req.body;
+
+        const logistic = await Logistic.find({ logisticId })
+        return res.status(200).json({
+            mesage: "Logistic partner fetched sucessfully",
+            logistic
+        })
+    } catch {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to find Logistic Partner",
+            error: error.message,
+        });
+    }
+}

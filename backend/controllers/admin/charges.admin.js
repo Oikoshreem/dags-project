@@ -117,3 +117,14 @@ exports.additionaldetails = async (req, res) => {
         });
     }
 };
+
+exports.fetchdDeliverCharges = async(req,res)=>{
+    try{
+        const charges = await Misc.findOne({})
+        return res.json({
+            charges:charges.dist
+        })
+    }catch(error){
+        res.status(500).json({ message: "Error creating bank details.", error: error.message });
+    }
+}
