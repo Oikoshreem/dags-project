@@ -166,6 +166,32 @@ exports.addAddress = async (req, res) => {
     }
 };
 
+exports.updateAddress = async (req, res) => {
+    const { phone, index, address } = req.body;
+
+    try {
+        const user = await User.findOne({ phone });
+
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        if (index < 0 || index >= user.address.length) {
+            return res.status(400).json({ message: "Invalid address index" });
+        }
+
+        user.address[index] = address;
+        await user.save();
+
+        res.status(200).json({
+            message: "Address updated successfully",
+            user
+        });
+    } catch (error) {
+        res.status(500).json("Internal Server error", error);
+    }
+};
+
 exports.fetchAddress = async (req, res) => {
     try {
         const { phone } = req.body;

@@ -127,7 +127,7 @@ exports.fetchAllUserOrders = async (req, res) => {
             order.orderStatus[order.orderStatus.length - 1].status === "pending"
         );
 
-        res.status(200).json({ activeOrders, pastOrders , orders });
+        res.status(200).json({ activeOrders, pastOrders, orders });
     } catch (error) {
         res.status(500).json({
             error: "Internal Server Error",

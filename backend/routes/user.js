@@ -7,7 +7,8 @@ const {
     addAddress,
     fetchAddress,
     fetchProfile,
-    updateUser
+    updateUser,
+    updateAddress
 } = require("../controllers/user/auth.user")
 
 const { createOrder, fetchServices, verifyPayment, fetchAllOrders, viewItem, viewOrder } = require("../controllers/user/orders.user")
@@ -21,6 +22,7 @@ router.post("/verifyOTP", verifyOTP)
 router.post("/login", login)
 router.put("/addAddress", auth, addAddress)
 router.get("/fetchAddress", auth, fetchAddress)
+router.put("/updateAddress", auth, updateAddress)
 router.put("/updateUser", auth, updateUser)
 router.get("/fetchProfile", auth, fetchProfile)
 

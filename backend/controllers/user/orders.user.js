@@ -52,6 +52,7 @@ exports.createOrder = async (req, res) => {
             console.log(item)
             const unitPrice = item.unitPrice;
             const commission = (unitPrice * qty * service.vendorCommission) / 100;
+            console.log("1",commission)
             const Amount = unitPrice * qty;
             allAmount += Amount;
             allCommission += commission;
@@ -85,7 +86,7 @@ exports.createOrder = async (req, res) => {
         // }
 
         const orderPicsUrls = await saveOrderPics(orderPics);
-        console.log(orderItems)
+        console.log("2",orderItems)
         const newOrder = new Order(
             Object.assign(
                 {
@@ -109,7 +110,6 @@ exports.createOrder = async (req, res) => {
         const orderId = newOrder.orderId; //to push newly created order into user data
         user.orders.push(orderId);
         await user.save();
-        console.log(razorpay.orders.create)
         const razorpayOrder = await razorpay.orders.create({
             amount: allAmount * 100,
             currency: 'INR',
