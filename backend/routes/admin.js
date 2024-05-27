@@ -49,7 +49,8 @@ const {
     fetchAllVendor,
     getVendor,
     editVendor,
-    createvendor
+    createvendor,
+    fetchVendorOrders
 } = require("../controllers/admin/vendor.admin")
 
 const {
@@ -112,7 +113,7 @@ router.get("/fetchItem", auth, logIP, checkInactivity, fetchItem)
 router.get("/fetchUsers", auth, logIP, checkInactivity, fetchUsers)
 router.put("/editUser", auth, logIP, checkInactivity, editUser)
 router.get("/getUser", auth, logIP, checkInactivity, getUser)
-router.get("/fetchUserOrders", auth, logIP, checkInactivity, fetchAllUserOrders)
+router.get("/UserOrders", auth, logIP, checkInactivity, fetchAllUserOrders)
 router.post("/createUser", auth, logIP, checkInactivity, createUser)
 router.post("/sendemail", auth, logIP, checkInactivity, sendBulkEmails)
 router.get("/viewFeedbacks", auth, logIP, checkInactivity, viewFeedbacks)
@@ -122,6 +123,6 @@ router.get("/fetchVendors", auth, logIP, checkInactivity, fetchAllVendor)
 router.get("/getVendor", auth, logIP, checkInactivity, getVendor)
 router.put("/editVendor", auth, logIP, checkInactivity, editVendor)
 router.post("/createvendor", auth, logIP, checkInactivity, createvendor)
-router.get("/logisticOrders", auth, logIP, checkInactivity, fetchlogisticOrders)
+router.get("/vendorOrders", auth, logIP, checkInactivity, fetchVendorOrders)
 
 module.exports = { adminRoutes: router }; 
