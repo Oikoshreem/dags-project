@@ -1,3 +1,4 @@
+const Order = require('../../models/user/order.model');
 const Vendor = require('../../models/vendor/vendor.model');
 
 exports.fetchAllVendor = async (req, res) => {
@@ -62,10 +63,10 @@ exports.createvendor = async (req, res) => {
         if (!phone) {
             return res.status(400).json({ message: "Please enter a mobile number." });
         }
-        let existingPhone = await Logistic.findOne({ phone });
+        let existingPhone = await Vendor.findOne({ phone });
         let existingEmail;
         if (email) {
-            existingEmail = await Logistic.findOne({ email });
+            existingEmail = await Vendor.findOne({ email });
         }
         if (existingPhone || existingEmail) {
             return res.status(400).json({ message: "Vendor already exists." });
@@ -82,3 +83,20 @@ exports.createvendor = async (req, res) => {
         });
     }
 };
+
+exports.fetchVendorOrders = async (req, res) => {
+    try {
+        const { vendorId } = req.body;
+        const orders = await Order.find({ vendorId })
+        res.json({
+            message: "All Orders for vendor fetched successfully",
+            orders
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed ",
+            error: error.message,
+        });
+    }
+}

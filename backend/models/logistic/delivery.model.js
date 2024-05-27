@@ -86,14 +86,17 @@ DeliveryPartnerSchema.pre('save', async function (next) {
     try {
         if (!this.logisticId) {
             const highestPartner = await mongoose.model('Logistic').findOne({}, { logisticId: 1 }, { sort: { 'logisticId': -1 } });
-            let newlogisticId = 'L1';
+            let newLogisticId = 'L0000001';
 
             if (highestPartner) {
-                const lastlogisticIdNumber = parseInt(highestPartner.logisticId.replace(/[^\d]/g, ''), 10);
-                newlogisticId = `L${lastlogisticIdNumber + 1}`;
+                const lastLogisticIdNumber = parseInt(highestPartner.logisticId.replace(/[^\d]/g, ''), 10);
+                const nextLogisticIdNumber = lastLogisticIdNumber + 1;
+                const logisticIdLength = highestPartner.logisticId.length - 1; 
+
+                newLogisticId = `L${String(nextLogisticIdNumber).padStart(logisticIdLength, '0')}`;
             }
 
-            this.logisticId = newlogisticId;
+            this.logisticId = newLogisticId;
         }
         next();
     } catch (error) {

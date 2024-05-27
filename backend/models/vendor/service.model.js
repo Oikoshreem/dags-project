@@ -27,15 +27,18 @@ const ServiceSchema = new mongoose.Schema({
 ServiceSchema.pre('save', async function (next) {
     try {
         if (!this.serviceId) {
-            const highestOrder = await mongoose.model('Service').findOne({}, { serviceId: 1 }, { sort: { 'serviceId': -1 } });
-            let newserviceId = 'SE1';
+            const highestService = await mongoose.model('Service').findOne({}, { serviceId: 1 }, { sort: { 'serviceId': -1 } });
+            let newServiceId = 'SE00001'; // Starting with SE00001
 
-            if (highestOrder) {
-                const lastserviceIdNumber = parseInt(highestOrder.serviceId.replace(/[^\d]/g, ''), 10);
-                newserviceId = `SE${lastserviceIdNumber + 1}`;
+            if (highestService) {
+                const lastServiceIdNumber = parseInt(highestService.serviceId.replace(/[^\d]/g, ''), 10);
+                const nextServiceIdNumber = lastServiceIdNumber + 1;
+                const serviceIdLength = highestService.serviceId.length - 2; // 'SE' part is 2 characters
+
+                newServiceId = `SE${String(nextServiceIdNumber).padStart(serviceIdLength, '0')}`;
             }
 
-            this.serviceId = newserviceId;
+            this.serviceId = newServiceId;
         }
         next();
     } catch (error) {
@@ -72,9 +75,5 @@ ServiceSchema.pre('save', async function (next) {
         next(error);
     }
 });
-
-
-
-
 
 module.exports = mongoose.model("Service", ServiceSchema);

@@ -6,7 +6,8 @@ const {
     login,
     fetchProfile,
     updateProfile,
-    switchAvailability
+    switchAvailability,
+    updateDocs
 } = require("../controllers/vendor/auth.vendor")
 const {
     findShortestDistance
@@ -18,12 +19,13 @@ const { getVendorDashboard, getTodaysOrder, fetchAllOrder, getOrder, acceptOrder
 router.post("/signup", register)
 router.post("/verifyOTP", verifyOTP)
 router.post("/login", login)
-router.post("/fetchProfile", auth, verifyVendor, fetchProfile)
-router.post("/updateProfile", auth, verifyVendor, updateProfile)
+router.get("/fetchProfile", auth, verifyVendor, fetchProfile)
+router.put("/updateProfile", auth, verifyVendor, updateProfile)
+router.put("/updateDocs", auth, updateDocs)
 router.post("/switchAvailability", auth, verifyVendor, switchAvailability)
 
 //orders
-router.get("/getVendorDashboard", auth, verifyVendor, getVendorDashboard)
+router.get("/dashboard", auth, verifyVendor, getVendorDashboard)
 router.get("/getTodaysOrder", auth, verifyVendor, getTodaysOrder)
 router.get("/fetchAllOrder", auth, verifyVendor, fetchAllOrder)
 router.get("/getOrder", auth, verifyVendor, getOrder)

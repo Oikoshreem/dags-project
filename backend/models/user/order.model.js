@@ -6,7 +6,7 @@ const OrderSchema = new mongoose.Schema({
         unique: true
     },
     orderDate: {
-        type: Date, 
+        type: Date,
         default: new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString() //time on which order is placed 
     },
     orderStatus: [{
@@ -39,6 +39,12 @@ const OrderSchema = new mongoose.Schema({
         type: String
     },
     transactionId: {
+        type: String
+    },
+    paymentId: {
+        type: String
+    },
+    paymentSignature: {
         type: String
     },
     userId: {
@@ -91,11 +97,11 @@ OrderSchema.pre('save', async function (next) {
     try {
         if (!this.orderId) {
             const highestOrder = await mongoose.model('Order').findOne({}, { orderId: 1 }, { sort: { 'orderId': -1 } });
-            let newOrderId = 'OD1';
+            let newOrderId = 'OD0000001'; // Starting with OD00001
 
             if (highestOrder) {
                 const lastOrderIdNumber = parseInt(highestOrder.orderId.replace(/[^\d]/g, ''), 10);
-                newOrderId = `OD${lastOrderIdNumber + 1}`;
+                newOrderId = `OD${String(lastOrderIdNumber + 1).padStart(5, '0')}`;
             }
 
             this.orderId = newOrderId;
@@ -105,5 +111,6 @@ OrderSchema.pre('save', async function (next) {
         next(error);
     }
 });
+
 
 module.exports = mongoose.model("Order", OrderSchema);

@@ -46,7 +46,7 @@ const VendorSchema = new mongoose.Schema({
     },
     currrentActiveOrders: {
         type: Number,
-        default:0
+        default: 0
     },
     address: {
         type: String
@@ -75,11 +75,14 @@ VendorSchema.pre('save', async function (next) {
     try {
         if (!this.vendorId) {
             const highestVendor = await mongoose.model('Vendor').findOne({}, { vendorId: 1 }, { sort: { vendorId: -1 } });
-            let newVendorId = 'VE1';
+            let newVendorId = 'VE000001'; 
 
             if (highestVendor) {
                 const lastVendorIdNumber = parseInt(highestVendor.vendorId.replace(/[^\d]/g, ''), 10);
-                newVendorId = `VE${lastVendorIdNumber + 1}`;
+                const nextVendorIdNumber = lastVendorIdNumber + 1;
+                const vendorIdLength = 6;
+
+                newVendorId = `VE${String(nextVendorIdNumber).padStart(vendorIdLength, '0')}`;
             }
 
             this.vendorId = newVendorId;
@@ -89,6 +92,7 @@ VendorSchema.pre('save', async function (next) {
         next(error);
     }
 });
+
 
 
 module.exports = mongoose.model("Vendor", VendorSchema);

@@ -32,6 +32,11 @@ exports.createOrder = async (req, res) => {
         let allCommission = 0;
 
         const user = await User.findOne({ phone });
+        if(!user){
+            return res
+                    .status(404)
+                    .json({ message: `User with phone number ${phone} not found` });
+        }
 
         for (const order of orders) {
             const { itemId, qty, serviceId } = order;
@@ -44,6 +49,7 @@ exports.createOrder = async (req, res) => {
             // let unitPrice = 0;
             // let commission = 0;
             const item = service.items.find(item => item.itemId === itemId);
+            console.log(item)
             const unitPrice = item.unitPrice;
             const commission = (unitPrice * qty * service.vendorCommission) / 100;
             const Amount = unitPrice * qty;
@@ -79,6 +85,7 @@ exports.createOrder = async (req, res) => {
         // }
 
         const orderPicsUrls = await saveOrderPics(orderPics);
+        console.log(orderItems)
         const newOrder = new Order(
             Object.assign(
                 {
@@ -119,7 +126,7 @@ exports.createOrder = async (req, res) => {
         console.error(error)
         res.status(500).json({
             message: "Internal server error rip",
-            error: error,
+            error: error.message,
             e: razorpay
         });
     }
@@ -203,7 +210,8 @@ exports.fetchAllOrders = async (req, res) => {
         const pastOrders = orders.filter(order =>
             order.orderStatus[order.orderStatus.length - 1].status === "delivered" ||
             order.orderStatus[order.orderStatus.length - 1].status === "cancelled" ||
-            order.orderStatus[order.orderStatus.length - 1].status === "refunded"
+            order.orderStatus[order.orderStatus.length - 1].status === "refunded" ||
+            order.orderStatus[order.orderStatus.length - 1].status === "pending"
         );
 
         res.status(200).json({ activeOrders, pastOrders });

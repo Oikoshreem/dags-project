@@ -68,6 +68,8 @@ exports.getVendorDashboard = async (req, res) => {
 
 exports.getTodaysOrder = async (req, res) => {
     const { vendorId } = req.body;
+    const today = new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
+
     try {
         const allOrders = await Order.find({
             vendorId: vendorId,
@@ -104,24 +106,29 @@ exports.getTodaysOrder = async (req, res) => {
 }
 
 exports.fetchAllOrder = async (req, res) => {
-    const { vendorId } = req.body;
-    const orders = await Order.find({ vendorId })
-    res.json({
-        message: "All Orders for vendor fetched successfully",
-        orders
-    })
+    try {
+        const { vendorId } = req.body;
+        const orders = await Order.find({ vendorId })
+        res.json({
+            message: "All Orders for vendor fetched successfully",
+            orders
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed ",
+            error: error.message,
+        });
+    }
 }
 
 exports.getOrder = async (req, res) => {
     try {
         const { orderId } = req.body;
-
-        const order = await Order.find({ orderId })
-
+        const order = await Order.findOneAndDelete({ orderId })
         if (!order) {
-            throw new Error('Order not found');
+            return res.json({ message: 'Order not found' });
         }
-
         const populatedItems = [];
 
         for (const item of order.items) {
@@ -145,7 +152,7 @@ exports.getOrder = async (req, res) => {
             mesage: "order fetched sucessfully",
             ordersDetails: populatedItems, order
         })
-    } catch {
+    } catch (error) {
         return res.status(500).json({
             success: false,
             message: "Failed to find order",
@@ -169,7 +176,7 @@ exports.acceptOrder = async (req, res) => {
 
         //marking his active order as -1
         const logisticId = order.logisticId[0];
-        const logistic = await Logistic.findOne({logisticId})
+        const logistic = await Logistic.findOne({ logisticId })
         logistic.currentActiveOrder -= 1
         await logistic.save();
 
@@ -193,7 +200,7 @@ exports.acceptOrder = async (req, res) => {
 exports.readyForDelivery = async (req, res) => {
     try {
         const { orderId } = req.body;
-        const order = await Order.findOne({orderId});
+        const order = await Order.findOne({ orderId });
 
         if (!order) {
             return res.status(404).json({ error: "Order not found" });

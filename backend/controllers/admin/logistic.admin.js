@@ -1,4 +1,5 @@
 const Logistic = require('../../models/logistic/delivery.model');
+const Order = require('../../models/user/order.model');
 
 exports.fetchLogistic = async (req, res) => {
     try {
@@ -101,4 +102,23 @@ exports.getLogistic = async (req, res) => {
             error: error.message,
         });
     }
+}
+
+exports.fetchlogisticOrders = async(req,res)=>{
+        try {
+            const { logisticId } = req.body;
+            const logistic = await Logistic.findOne({ logisticId });
+            const orderIds = logistic.orders
+            const orders = await Order.find({ orderId: { $in: orderIds } });//will get all orders even repeated orders 
+    
+            // const activeOrders = orders.filter(order => {
+            //     const orderStatusLength = order.orderStatus.length;
+            //     return orderStatusLength === 4 || orderStatusLength === 7;
+            // });  //if index is 7 then if the same logisticid is present in 4 then that order isd already done at 4 and not consider as active
+    
+            return res.status(200).json({ orders });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
 }

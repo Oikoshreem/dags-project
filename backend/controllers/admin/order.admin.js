@@ -53,12 +53,6 @@ exports.getOrder = async (req, res) => {
         }
 
         const vendor = await Vendor.findOne({ vendorId: order.vendorId });
-        if (!vendor) {
-            return res.status(404).json({
-                success: false,
-                message: "Vendor not found"
-            });
-        }
 
         const logisticDetails = await Logistic.find({
             logisticId: { $in: order.logisticId }
@@ -68,8 +62,8 @@ exports.getOrder = async (req, res) => {
             message: "Order fetched successfully",
             order: {
                 ...order.toObject(),
-                user: user.toObject(),
-                vendor: vendor.toObject(),
+                user: user,
+                vendor: vendor,
                 logisticDetails: logisticDetails.map(logistic => logistic.toObject())
             }
         });

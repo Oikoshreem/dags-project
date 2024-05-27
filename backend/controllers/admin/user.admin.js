@@ -1,7 +1,8 @@
 const Admin = require('../../models/admin/admin');
 const User = require('../../models/user/user.model');
 const mailSender = require('../../utils/admin/mailSender');
-const { bulkEmail } = require('../../Tempelates/bulkEmail.js')
+const { bulkEmail } = require('../../Tempelates/bulkEmail.js');
+const Order = require('../../models/user/order.model.js');
 
 exports.fetchUsers = async (req, res) => {
     try {
@@ -105,6 +106,33 @@ exports.sendBulkEmails = async (req, res) => {
     } catch (error) {
         console.error("Error sending bulk emails:", error);
         return res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+exports.fetchAllUserOrders = async (req, res) => {
+    try {
+        const { phone } = req.body;
+        const user = await User.findOne(phone);
+        const orders = await Order.find({ userId: phone })
+        const activeOrders = orders.filter(order =>
+            order.orderStatus[order.orderStatus.length - 1].status !== "delivered" &&
+            order.orderStatus[order.orderStatus.length - 1].status !== "cancelled" &&
+            order.orderStatus[order.orderStatus.length - 1].status !== "refunded"
+        );
+
+        const pastOrders = orders.filter(order =>
+            order.orderStatus[order.orderStatus.length - 1].status === "delivered" ||
+            order.orderStatus[order.orderStatus.length - 1].status === "cancelled" ||
+            order.orderStatus[order.orderStatus.length - 1].status === "refunded" ||
+            order.orderStatus[order.orderStatus.length - 1].status === "pending"
+        );
+
+        res.status(200).json({ activeOrders, pastOrders , orders });
+    } catch (error) {
+        res.status(500).json({
+            error: "Internal Server Error",
+            message: error.message
+        });
     }
 };
 

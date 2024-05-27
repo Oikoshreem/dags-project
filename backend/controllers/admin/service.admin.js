@@ -101,10 +101,32 @@ exports.editItemInService = async (req, res) => {
 };
 
 exports.fetchServices = async (req, res) => {
+    const service = await Service.find()
     try {
-        const service = await Service.find()
         res.json({ message: "Service fetched successfully", service });
     } catch (error) {
         res.status(500).json({ error: 'Could not find service', message: error.message });
     }
 }
+
+exports.fetchItem = async (req, res) => {
+    const { serviceId, itemId } = req.body;
+
+    try {
+        const service = await Service.findOne({ serviceId });
+
+        if (!service) {
+            return res.status(404).json({ error: 'Service not found' });
+        }
+
+        const item = service.items.find(item => item.itemId === itemId);
+
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found in the specified service' });
+        }
+
+        res.json({ message: "Item fetched successfully", item });
+    } catch (error) {
+        res.status(500).json({ error: 'Could not fetch item', message: error.message });
+    }
+};

@@ -90,7 +90,7 @@ exports.additionaldetails = async (req, res) => {
         const { tnc, shippingPolicy, privacyPolicy, refundPolicy } = req.body;
 
         const misc = await Misc.findOne();
-        if (!misc) {
+        if (!misc) { 
             return res.status(404).json({ message: "Misc document not found" });
         }
 
@@ -118,13 +118,13 @@ exports.additionaldetails = async (req, res) => {
     }
 };
 
-exports.fetchdDeliverCharges = async(req,res)=>{
-    try{
+exports.fetchMisc = async (req, res) => {
+    try {
         const charges = await Misc.findOne({})
         return res.json({
-            charges:charges.dist
+            charges: charges
         })
-    }catch(error){
+    } catch (error) {
         res.status(500).json({ message: "Error creating bank details.", error: error.message });
     }
 }

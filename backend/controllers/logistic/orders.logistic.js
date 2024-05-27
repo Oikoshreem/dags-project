@@ -4,7 +4,7 @@ const Vendor = require('../../models/vendor/vendor.model');
 const Service = require('../../models/vendor/service.model');
 const Logistic = require('../../models/logistic/delivery.model');
 const User = require('../../models/user/user.model');
-const { sendOTP,generateOTP } = require('../../utils/admin/generateOTP');
+const { sendOTP, generateOTP } = require('../../utils/admin/generateOTP');
 const bcrypt = require('bcrypt')
 
 exports.getLogisticDashboard = async (req, res) => {
@@ -118,7 +118,7 @@ exports.getAllOrders = async (req, res) => {
 exports.fetchActiveOrders = async (req, res) => {
     try {
         const { logisticId } = req.body;
-        const logistic = await Logistic.find(logisticId);
+        const logistic = await Logistic.findOne({ logisticId });
         const orderIds = logistic.orders
         const orders = await Order.find({ orderId: { $in: orderIds } });//will get all orders even repeated orders 
 
@@ -257,7 +257,7 @@ exports.outOfDeliveryStatus = async (req, res) => {
 exports.confirmDelivery = async (req, res) => {
     try {
         const { otp, orderId } = req.body;
-        const order = await Order.findOne({orderId})
+        const order = await Order.findOne({ orderId })
         const user = await User.findOne({ phone: order.userId });
         if (!user) {
             return res.status(404).json({
