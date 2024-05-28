@@ -1,4 +1,4 @@
-const Misc = require('../../models/logistic/miscellaneous'); 
+const Misc = require('../../models/logistic/miscellaneous');
 
 exports.createDeliveryCharge = async (req, res) => {
     try {
@@ -26,24 +26,26 @@ exports.createDeliveryCharge = async (req, res) => {
 
 exports.updateDeliveryCharge = async (req, res) => {
     try {
-        const { dist } = req.body;
-
-        if (!dist || typeof dist !== 'object') {
-            return res.status(400).json({ message: "Invalid input data" });
-        }
-
-        const { five, ten, twenty, thirty } = dist;
+        const { five, ten, twenty, thirty } = req.body;
 
         const existingMisc = await Misc.findOne();
         if (!existingMisc) {
             return res.status(404).json({ message: "No existing charges found" });
         }
 
-        existingMisc.dist.five = five;
-        existingMisc.dist.ten = ten;
-        existingMisc.dist.twenty = twenty;
-        existingMisc.dist.thirty = thirty;
+        if (five) {
+            existingMisc.dist.five = five;
+        }
+        if (ten) {
+            existingMisc.dist.ten = ten;
+        }
+        if (twenty) {
+            existingMisc.dist.twenty = twenty;
+        }
+        if (thirty) {
+            existingMisc.dist.thirty = thirty;
 
+        }
         await existingMisc.save();
 
         res.status(200).json(existingMisc);
@@ -119,7 +121,7 @@ exports.additionaldetails = async (req, res) => {
         const { tnc, shippingPolicy, privacyPolicy, refundPolicy } = req.body;
 
         const misc = await Misc.findOne();
-        if (!misc) { 
+        if (!misc) {
             return res.status(404).json({ message: "Misc document not found" });
         }
 

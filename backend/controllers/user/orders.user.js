@@ -27,15 +27,16 @@ exports.fetchServices = async (req, res) => {
 exports.createOrder = async (req, res) => {
     try {
         const { orders, vendorId, deliveryFee, phone, orderPics, ...updates } = req.body;
+        const misc = await Misc.findOne();
         const orderItems = [];
         let allAmount = 0;
         let allCommission = 0;
 
         const user = await User.findOne({ phone });
-        if(!user){
+        if (!user) {
             return res
-                    .status(404)
-                    .json({ message: `User with phone number ${phone} not found` });
+                .status(404)
+                .json({ message: `User with phone number ${phone} not found` });
         }
 
         for (const order of orders) {
@@ -49,10 +50,8 @@ exports.createOrder = async (req, res) => {
             // let unitPrice = 0;
             // let commission = 0;
             const item = service.items.find(item => item.itemId === itemId);
-            console.log(item)
             const unitPrice = item.unitPrice;
             const commission = (unitPrice * qty * service.vendorCommission) / 100;
-            console.log("1",commission)
             const Amount = unitPrice * qty;
             allAmount += Amount;
             allCommission += commission;
@@ -84,9 +83,10 @@ exports.createOrder = async (req, res) => {
         //         orderPicsUrls.push(picPath);
         //     }
         // }
+        tamAmount = (allAmount * misc.tax) / 100
 
         const orderPicsUrls = await saveOrderPics(orderPics);
-        console.log("2",orderItems)
+        console.log("2", orderItems)
         const newOrder = new Order(
             Object.assign(
                 {
@@ -95,6 +95,7 @@ exports.createOrder = async (req, res) => {
                     amount: allAmount,
                     deliveryFee: deliveryFee * 2,
                     vendorId: vendorId,
+                    taxes: tamAmount,
                     vendorFee: allCommission,
                     ordersPic: orderPicsUrls,
                     orderStatus: [{ status: "pending" }], // Set initial status as "pending"

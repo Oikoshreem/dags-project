@@ -10,8 +10,8 @@ const SettlementSchema = new mongoose.Schema({
     status: {
         type: String
     },
-    type: {
-        type: String
+    amountFor: {
+        type: String  //for vendor or logistic
     },
     date: {
         type: Date

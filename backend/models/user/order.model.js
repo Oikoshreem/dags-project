@@ -23,6 +23,18 @@ const OrderSchema = new mongoose.Schema({
     amount: {
         type: Number  //amout exclusive of tax
     },
+    settlementToVendor: {
+        type: Number,
+        deafult: null
+    },
+    settlementForLogisticsOnPickup: {
+        type: Number,
+        deafult: null
+    },
+    settlementForLogisticsOnDelivery: {
+        type: Number,
+        deafult: null
+    },
     discount: {
         type: String
     },
