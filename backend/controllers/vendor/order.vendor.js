@@ -2,13 +2,12 @@ const Order = require('../../models/user/order.model');
 const { startOfDay, endOfDay, isBefore } = require('date-fns');
 const Vendor = require('../../models/vendor/vendor.model');
 const Service = require('../../models/vendor/service.model');
-const Commission = require('../../models/admin/commission')
 const Logistic = require('../../models/logistic/delivery.model')
 
 exports.getVendorDashboard = async (req, res) => {
     const vendorId = req.body.vendorId;
     const today = new Date(Date.now() + (5.5 * 60 * 60 * 1000)).toISOString()
-    const per = await Commission.find();
+    // const per = await Commission.find();
 
     try {
         const todayOrders = await Order.find({

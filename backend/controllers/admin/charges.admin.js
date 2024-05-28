@@ -1,4 +1,4 @@
-const Misc = require('../../models/logistic/miscellaneous'); // Adjust the path as needed
+const Misc = require('../../models/logistic/miscellaneous'); 
 
 exports.createDeliveryCharge = async (req, res) => {
     try {
@@ -23,6 +23,35 @@ exports.createDeliveryCharge = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.updateDeliveryCharge = async (req, res) => {
+    try {
+        const { dist } = req.body;
+
+        if (!dist || typeof dist !== 'object') {
+            return res.status(400).json({ message: "Invalid input data" });
+        }
+
+        const { five, ten, twenty, thirty } = dist;
+
+        const existingMisc = await Misc.findOne();
+        if (!existingMisc) {
+            return res.status(404).json({ message: "No existing charges found" });
+        }
+
+        existingMisc.dist.five = five;
+        existingMisc.dist.ten = ten;
+        existingMisc.dist.twenty = twenty;
+        existingMisc.dist.thirty = thirty;
+
+        await existingMisc.save();
+
+        res.status(200).json(existingMisc);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 exports.addFAQ = async (req, res) => {
     try {

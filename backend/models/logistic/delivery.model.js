@@ -64,7 +64,7 @@ const DeliveryPartnerSchema = new mongoose.Schema({
         type: Date
     },
     locationLog: [{
-        type: Boolean
+        type: String
     }],
     ip: [{
         type: String

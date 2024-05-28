@@ -65,19 +65,20 @@ const {
     updateFAQ,
     deleteFAQ,
     additionaldetails,
-    fetchMisc
+    fetchMisc,
+    updateDeliveryCharge
 } = require("../controllers/admin/Charges.admin")
 
 //auth
 router.post("/credintials", logIP, credentials)
 router.post("/verifyOTP", logIP, verifyOTP)
 router.post("/twoSV", auth, logIP, twoSV)
-router.post("/forgotPassword", auth, logIP, forgotPassword)
-router.post("/forgotPasscode", auth, logIP, forgotPasscode)
-router.post("/twoSV", auth, logIP, twoSV)
+router.put("/forgotPassword", auth, logIP, forgotPassword)
+router.put ("/forgotPasscode", auth, logIP, forgotPasscode)
 
 //misc
-router.post("/createDeliveryCharge", auth, logIP, checkInactivity, createDeliveryCharge)
+router.post("/DeliveryCharge", auth, logIP, checkInactivity, createDeliveryCharge)
+router.put("/DeliveryCharge", auth, logIP, checkInactivity, updateDeliveryCharge)
 router.post("/addFAQ", auth, logIP, checkInactivity, addFAQ)
 router.put("/updateFAQ", auth, logIP, checkInactivity, updateFAQ)
 router.delete("/deleteFAQ", auth, logIP, checkInactivity, deleteFAQ)

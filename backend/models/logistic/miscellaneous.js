@@ -29,6 +29,9 @@ const MiscellaneousSchema = new mongoose.Schema({
             required: true
         }
     }],
+    tax: {
+        type: Number
+    },
     tnc: {
         type: String
     },
