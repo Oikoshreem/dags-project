@@ -54,7 +54,6 @@ exports.updateDeliveryCharge = async (req, res) => {
     }
 };
 
-
 exports.addFAQ = async (req, res) => {
     try {
         const { question, answer } = req.body;

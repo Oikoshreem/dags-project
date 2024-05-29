@@ -68,6 +68,7 @@ const {
     fetchMisc,
     updateDeliveryCharge
 } = require("../controllers/admin/Charges.admin")
+const { vendorSettlement, settleVendorAmount, viewHistory } = require("../controllers/admin/settlement.admin")
 
 //auth
 router.post("/credintials", logIP, credentials)
@@ -76,15 +77,6 @@ router.post("/twoSV", auth, logIP, twoSV)
 router.put("/forgotPassword", auth, logIP, forgotPassword)
 router.put ("/forgotPasscode", auth, logIP, forgotPasscode)
 
-//misc
-router.post("/DeliveryCharge", auth, logIP, checkInactivity, createDeliveryCharge)
-router.put("/DeliveryCharge", auth, logIP, checkInactivity, updateDeliveryCharge)
-router.post("/addFAQ", auth, logIP, checkInactivity, addFAQ)
-router.put("/updateFAQ", auth, logIP, checkInactivity, updateFAQ)
-router.delete("/deleteFAQ", auth, logIP, checkInactivity, deleteFAQ)
-router.post("/additionaldetails", auth, logIP, checkInactivity, additionaldetails)
-router.get("/fetchMisc", auth, logIP, checkInactivity, fetchMisc)
-
 
 //logistic
 router.get("/fetchLogistic", auth, logIP, checkInactivity, fetchLogistic)
@@ -92,23 +84,6 @@ router.get("/getLogistic", auth, logIP, checkInactivity, getLogistic)
 router.put("/updateLogistic", auth, logIP, checkInactivity, updateLogistic)
 router.post("/createLogistic", auth, logIP, checkInactivity, createLogistic)
 router.get("/logisticOrders", auth, logIP, checkInactivity, fetchlogisticOrders)
-
-//orders
-router.get("/fetchOrders", auth, logIP, checkInactivity, viewOrders)
-router.get("/getOrder", auth, logIP, checkInactivity, getOrder)
-router.put("/updateOrder", auth, logIP, checkInactivity, updateOrder)
-router.get("/getCancelledOrders", auth, logIP, checkInactivity, getCancelledOrders)
-router.post("/createOrder", auth, logIP, checkInactivity, createOrder)
-router.get("/fetchOrdersByDateRange", auth, logIP, checkInactivity, fetchOrdersByDateRange)
-
-
-//service
-router.post("/addService", auth, logIP, checkInactivity, createService)
-router.post("/addItem", auth, logIP, checkInactivity, addItemToService)
-router.put("/editService", auth, logIP, checkInactivity, editService)
-router.put("/editItemInService", auth, logIP, checkInactivity, editItemInService)
-router.get("/fetchServices", auth, logIP, checkInactivity, fetchServices)
-router.get("/fetchItem", auth, logIP, checkInactivity, fetchItem)
 
 //user
 router.get("/fetchUsers", auth, logIP, checkInactivity, fetchUsers)
@@ -125,5 +100,37 @@ router.get("/getVendor", auth, logIP, checkInactivity, getVendor)
 router.put("/editVendor", auth, logIP, checkInactivity, editVendor)
 router.post("/createvendor", auth, logIP, checkInactivity, createvendor)
 router.get("/vendorOrders", auth, logIP, checkInactivity, fetchVendorOrders)
+
+//orders
+router.get("/fetchOrders", auth, logIP, checkInactivity, viewOrders)
+router.get("/getOrder", auth, logIP, checkInactivity, getOrder)
+router.put("/updateOrder", auth, logIP, checkInactivity, updateOrder)
+router.get("/getCancelledOrders", auth, logIP, checkInactivity, getCancelledOrders)
+router.post("/createOrder", auth, logIP, checkInactivity, createOrder)
+router.get("/fetchOrdersByDateRange", auth, logIP, checkInactivity, fetchOrdersByDateRange)
+
+//service
+router.post("/addService", auth, logIP, checkInactivity, createService)
+router.post("/addItem", auth, logIP, checkInactivity, addItemToService)
+router.put("/editService", auth, logIP, checkInactivity, editService)
+router.put("/editItemInService", auth, logIP, checkInactivity, editItemInService)
+router.get("/fetchServices", auth, logIP, checkInactivity, fetchServices)
+router.get("/fetchItem", auth, logIP, checkInactivity, fetchItem)
+
+//settlement
+router.get("/vendorSettlement", auth, logIP, checkInactivity, vendorSettlement)
+router.post("/settleVendorAmount", auth, logIP, checkInactivity, settleVendorAmount)
+router.get("/history", auth, logIP, checkInactivity, viewHistory)
+
+//misc
+router.post("/DeliveryCharge", auth, logIP, checkInactivity, createDeliveryCharge)
+router.put("/DeliveryCharge", auth, logIP, checkInactivity, updateDeliveryCharge)
+router.post("/addFAQ", auth, logIP, checkInactivity, addFAQ)
+router.put("/updateFAQ", auth, logIP, checkInactivity, updateFAQ)
+router.delete("/deleteFAQ", auth, logIP, checkInactivity, deleteFAQ)
+router.post("/additionaldetails", auth, logIP, checkInactivity, additionaldetails)
+router.get("/fetchMisc", fetchMisc)
+
+
 
 module.exports = { adminRoutes: router }; 

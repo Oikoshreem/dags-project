@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
 const SettlementSchema = new mongoose.Schema({
-    orderId: {
+    Id: {
         type: String
     },
     amount: {
-        type: String
+        type: Number
     },
     status: {
         type: String
@@ -13,6 +13,12 @@ const SettlementSchema = new mongoose.Schema({
     amountFor: {
         type: String  //for vendor or logistic
     },
+    totalOrders: {
+        type: Number
+    },
+    orderIds: [{
+        type: String
+    }],
     date: {
         type: Date
     }
