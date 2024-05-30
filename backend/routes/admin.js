@@ -68,7 +68,13 @@ const {
     fetchMisc,
     updateDeliveryCharge
 } = require("../controllers/admin/Charges.admin")
-const { vendorSettlement, settleVendorAmount, viewHistory, logisticSettlement, logisticPickupSettlement, logisticDeliverySettlement, getValidLogisticIds } = require("../controllers/admin/settlement.admin")
+const {
+    vendorSettlement,
+    settleVendorAmount,
+    viewHistory,
+    logisticPickupSettlement,
+    logisticDeliverySettlement
+} = require("../controllers/admin/settlement.admin")
 
 //auth
 router.post("/credintials", logIP, credentials)
@@ -119,9 +125,8 @@ router.get("/fetchItem", auth, logIP, checkInactivity, fetchItem)
 
 //settlement
 router.get("/vendorSettlement", auth, logIP, checkInactivity, vendorSettlement)
-router.get("/getValidLogisticIds", auth, logIP, checkInactivity, getValidLogisticIds)
-router.get("/logisticPickupSettlement", auth, logIP, checkInactivity, logisticPickupSettlement)
-router.get("/logisticDeliverySettlement", auth, logIP, checkInactivity, logisticDeliverySettlement)
+router.get("/pickupSettlement", auth, logIP, checkInactivity, logisticPickupSettlement)
+router.get("/deliverySettlement", auth, logIP, checkInactivity, logisticDeliverySettlement)
 router.post("/settleVendorAmount", auth, logIP, checkInactivity, settleVendorAmount)
 router.get("/history", auth, logIP, checkInactivity, viewHistory)
 
