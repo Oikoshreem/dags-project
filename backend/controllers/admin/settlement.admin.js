@@ -43,7 +43,7 @@ exports.settleVendorAmount = async (req, res) => {
         //     return res.status(400).json({ error: 'Invalid vendor data' });
         // }
 
-        const { _id , orders, totalSettlement } = req.body;
+        const { _id, orders, totalSettlement } = req.body;
         const orderIds = orders.map(order => order._id);
 
         const updateResult = await Order.updateMany(
@@ -72,7 +72,7 @@ exports.settleVendorAmount = async (req, res) => {
         });
     }
 };
- 
+
 exports.viewHistory = async (req, res) => {
     try {
         const settlementHistory = await Settlement.find({});
@@ -84,7 +84,7 @@ exports.viewHistory = async (req, res) => {
 
         for (const settlement of settlementHistory) {
             const orders = await Order.find({ _id: { $in: settlement.orderIds } });
-            settledOrders.push(orders); 
+            settledOrders.push(orders);
         }
 
         res.status(200).json({
@@ -100,4 +100,120 @@ exports.viewHistory = async (req, res) => {
         });
     }
 };
+
+exports.logisticPickupSettlement = async (req, res) => {
+    try {
+        const pickupSettlements = await Order.aggregate([
+            {
+                $match: {
+                    "logisticId.0": { $exists: true, $ne: null },
+                    settlementForLogisticsOnPickup: { $ne: 0, $ne: null }
+                }
+            },
+            {
+                $group: {
+                    _id: "$logisticId.0",
+                    totalPickupSettlement: { $sum: "$settlementForLogisticsOnPickup" },
+                    orders: { $push: "$$ROOT" }
+                }
+            },
+            {
+                $project: {
+                    logisticId: "$_id",
+                    totalPickupSettlement: 1,
+                    orders: 1,
+                    _id: 0
+                }
+            }
+        ]);
+
+        res.status(200).json(pickupSettlements);
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while fetching the pickup logistic settlements' });
+    }
+};
+
+exports.logisticDeliverySettlement = async (req, res) => {
+    try {
+        const deliverySettlements = await Order.aggregate([
+            {
+                $match: {
+                    "logisticId.1": { $exists: true, $ne: null },
+                    settlementForLogisticsOnDelivery: { $ne: 0, $ne: null }
+                }
+            },
+            {
+                $group: {
+                    _id: "$logisticId.1",
+                    totalDeliverySettlement: { $sum: "$settlementForLogisticsOnDelivery" },
+                    orders: { $push: "$$ROOT" }
+                }
+            },
+            {
+                $project: {
+                    logisticId: "$_id",
+                    totalDeliverySettlement: 1,
+                    orders: 1,
+                    _id: 0
+                }
+            }
+        ]);
+
+        res.status(200).json(deliverySettlements);
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while fetching the delivery logistic settlements' });
+    }
+};
+
+
+exports.getValidLogisticIds = async (req, res) => {
+    try {
+        const validLogisticIds = await Order.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { "logisticId.0": { $exists: true, $ne: null }, settlementForLogisticsOnPickup: { $ne: 0, $ne: null } },
+                        { "logisticId.1": { $exists: true, $ne: null }, settlementForLogisticsOnDelivery: { $ne: 0, $ne: null } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    pickupLogisticId: { $arrayElemAt: ["$logisticId", 0] },
+                    deliveryLogisticId: { $arrayElemAt: ["$logisticId", 1] }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    logisticIds: {
+                        $addToSet: { $cond: [{ $ne: ["$pickupLogisticId", null] }, "$pickupLogisticId", "$$REMOVE"] }
+                    }
+                }
+            },
+            {
+                $project: {
+                    logisticIds: {
+                        $concatArrays: [
+                            "$logisticIds",
+                            {
+                                $filter: {
+                                    input: "$logisticIds",
+                                    as: "logisticId",
+                                    cond: { $ne: ["$$logisticId", null] }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]);
+
+        const logisticIds = validLogisticIds.length ? validLogisticIds[0].logisticIds : [];
+        res.status(200).json({ logisticIds });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while fetching valid logistic IDs' });
+    }
+};
+
 
