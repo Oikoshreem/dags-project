@@ -73,7 +73,9 @@ const {
     settleVendorAmount,
     viewHistory,
     logisticPickupSettlement,
-    logisticDeliverySettlement
+    logisticDeliverySettlement,
+    settlePickedAmount,
+    settleDeliveredAmount
 } = require("../controllers/admin/settlement.admin")
 
 //auth
@@ -128,6 +130,8 @@ router.get("/vendorSettlement", auth, logIP, checkInactivity, vendorSettlement)
 router.get("/pickupSettlement", auth, logIP, checkInactivity, logisticPickupSettlement)
 router.get("/deliverySettlement", auth, logIP, checkInactivity, logisticDeliverySettlement)
 router.post("/settleVendorAmount", auth, logIP, checkInactivity, settleVendorAmount)
+router.post("/settlePickedAmount", auth, logIP, checkInactivity, settlePickedAmount)
+router.post("/settleDeliveredAmount", auth, logIP, checkInactivity, settleDeliveredAmount)
 router.get("/history", auth, logIP, checkInactivity, viewHistory)
 
 //misc

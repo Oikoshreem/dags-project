@@ -124,7 +124,7 @@ exports.logisticPickupSettlement = async (req, res) => {
         });
     }
 };
-
+  
 exports.logisticDeliverySettlement = async (req, res) => {
     try {
         const pickupSettlements = await Order.aggregate([
@@ -157,7 +157,7 @@ exports.logisticDeliverySettlement = async (req, res) => {
 
 exports.settlePickedAmount = async (req, res) => {
     try {
-        const { logisticId, orders, totalSettlement } = req.body;
+        const { _id, orders, totalSettlement } = req.body;
         const orderIds = orders.map(order => order._id);
 
         const updateResult = await Order.updateMany(
@@ -167,7 +167,7 @@ exports.settlePickedAmount = async (req, res) => {
 
         const history = await Settlement.create({
             amount: totalSettlement,
-            Id: logisticId,
+            Id: _id,
             date: new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString(), // Adjusting for IST
             orderIds: orderIds,
         });
@@ -188,7 +188,7 @@ exports.settlePickedAmount = async (req, res) => {
 
 exports.settleDeliveredAmount = async (req, res) => {
     try {
-        const { logisticId, orders, totalSettlement } = req.body;
+        const { _id, orders, totalSettlement } = req.body;
         const orderIds = orders.map(order => order._id);
 
         const updateResult = await Order.updateMany(
@@ -198,14 +198,14 @@ exports.settleDeliveredAmount = async (req, res) => {
 
         const history = await Settlement.create({
             amount: totalSettlement,
-            Id: logisticId,
+            Id: _id,
             date: new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString(), // Adjusting for IST
             orderIds: orderIds,
         });
 
         res.status(200).json({
             message: 'Logistic settlements updated successfully',
-            logisticId: logisticId,
+            logisticId: _id,
             totalSettlement: totalSettlement,
             settledOrders: orderIds
         });
