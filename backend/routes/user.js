@@ -39,6 +39,6 @@ router.post("/findNearestVendor", auth, findNearestVendor)
 router.post("/ShortestDistanceForVendor", auth, ShortestDistanceForVendor)
 router.post("/ShortestDistanceforUser", auth, ShortestDistanceforUser)
 
-router.post("/giveReview", auth, giveReview)
+router.post("/review", auth, giveReview)
 
 module.exports = { userRoutes: router }

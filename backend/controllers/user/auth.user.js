@@ -22,7 +22,7 @@ exports.register = async (req, res) => {
         })
     }
     const phoneOTP = generateOTP();
-    const hashedOTP = await bcrypt.hash(phoneOTP, 10);
+    const hashedOTP = await bcrypt.hash(phoneOTP, 10);  
 
     try {
         const user = await User.create({ phone, name, OTP: hashedOTP, userId: phone });
@@ -101,7 +101,6 @@ exports.verifyOTP = async (req, res) => {
 }
 
 exports.login = async (req, res) => {
-
     try {
         const { phone } = req.body;
         const ip = req.ip;
@@ -150,9 +149,9 @@ exports.addAddress = async (req, res) => {
         if (latitude && longitude) {
             user.geoCoordinates.latitude = latitude;
             user.geoCoordinates.longitude = longitude;
-        }
+        }vbgty56
         if (pincode) {
-            user.pincode = pincode;
+            user.pincode = pincode;  
         }
         if (address) {
             user.address.push(address);

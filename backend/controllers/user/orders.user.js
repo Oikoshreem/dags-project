@@ -13,9 +13,10 @@ const razorpay = new Razorpay({
 });
 
 exports.fetchServices = async (req, res) => {
+    console.log("hhh",razorpay)
     try {
         const service = await Service.find();
-        res.json({ message: "Service fetched successfully", service });
+        res.json({ message: "Service fetched successfully", service, razorpay });
     } catch (error) {
         res.status(500).json({
             error: "Could not find service",
@@ -116,7 +117,7 @@ exports.createOrder = async (req, res) => {
             currency: 'INR',
             receipt: orderId.toString(),
             payment_capture: '1'
-        });
+        }); 
 
         res.status(201).json({
             message: "Order created successfully",

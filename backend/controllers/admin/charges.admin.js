@@ -117,9 +117,9 @@ exports.deleteFAQ = async (req, res) => {
 
 exports.additionaldetails = async (req, res) => {
     try {
-        const { tnc, shippingPolicy, privacyPolicy, refundPolicy } = req.body;
+        const { tnc, shippingPolicy, privacyPolicy, refundPolicy, tax } = req.body;
 
-        const misc = await Misc.findOne();
+        const misc = await Misc.findOne({});
         if (!misc) {
             return res.status(404).json({ message: "Misc document not found" });
         }
@@ -135,6 +135,9 @@ exports.additionaldetails = async (req, res) => {
         }
         if (refundPolicy) {
             misc.refundPolicy = refundPolicy;
+        }
+        if (tax) {
+            misc.tax = tax;
         }
 
         const updatedMisc = await misc.save();

@@ -1,6 +1,6 @@
 // Assuming you have the data fetched from your server or TinyMCE
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('http://localhost:3300/admin/api/fetchMisc')
+  fetch(`${process.env.END_POINT}/admin/api/fetchMisc`)
     .then(response => response.json())
     .then(data => {
       if (data && data.charges && data.charges.privacyPolicy) {
